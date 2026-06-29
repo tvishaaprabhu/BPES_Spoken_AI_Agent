@@ -48,6 +48,18 @@ st.markdown("""
 .mic-wrap { text-align: center; padding: 1.5rem 0 0.5rem; }
 .mic-hint { font-size: 13px; color: #888; margin-top: 8px; }
 
+/* Larger audio input mic button */
+[data-testid="stAudioInput"] button {
+    width: 72px !important;
+    height: 72px !important;
+    font-size: 28px !important;
+}
+[data-testid="stAudioInput"] {
+    display: flex;
+    justify-content: center;
+    margin: 0.5rem 0;
+}
+
 /* ── CONVERSATION PICKER ── */
 .conv-card {
     background: white; border: 1.5px solid #e0ddd6;
@@ -641,11 +653,9 @@ def parse_response(text: str) -> dict:
     return s
 
 def render_response(s: dict):
-    if not any([s["said"], s["question"], s["feedback"], s["enhancement"]]):
+    if not any([s["question"], s["feedback"], s["enhancement"]]):
         st.markdown(s["raw"]); return
     html = '<div class="fb-card">'
-    if s["said"]:
-        html += f'<div class="fb-sec"><div class="fb-lbl lbl-said">🗣 What you said</div><div>{s["said"]}</div></div>'
     if s["question"]:
         html += f'<div class="fb-sec"><div class="fb-lbl lbl-q">❓ Next question</div><div><strong>{s["question"]}</strong></div></div>'
     if s["feedback"]:
@@ -710,7 +720,7 @@ def screen_login():
             if st.form_submit_button("Sign in as teacher →", use_container_width=True):
                 correct = get_teacher_password()
                 if not correct:
-                    st.error("No teacher password set yet. Add one in Firestore: config/teacher → password field.")
+                    st.error("No teacher password has been set up yet. Please contact the app administrator.")
                 elif pw == correct:
                     st.session_state.is_teacher = True
                     st.session_state.screen = "teacher_home"
@@ -724,11 +734,19 @@ def screen_login():
 # ─────────────────────────────────────────────
 def screen_home():
     s = st.session_state.student
-    st.markdown(
-        f'<div class="welcome-banner"><h2>Hello, {s["name"]} 👋</h2>'
-        f'<p>Age {s["age"]}</p></div>',
-        unsafe_allow_html=True
-    )
+    col_w, col_so = st.columns([5, 1])
+    with col_w:
+        st.markdown(
+            f'<div class="welcome-banner"><h2>Hello, {s["name"]} 👋</h2>'
+            f'<p>Age {s["age"]}</p></div>',
+            unsafe_allow_html=True
+        )
+    with col_so:
+        st.markdown("<div style='padding-top:1.1rem'></div>", unsafe_allow_html=True)
+        if st.button("Sign out", use_container_width=True):
+            for k in list(st.session_state.keys()):
+                del st.session_state[k]
+            st.rerun()
 
     # Tab: Practice vs History
     tab_practice, tab_history = st.tabs(["📚 Practice", "📋 Past sessions"])
@@ -743,9 +761,18 @@ def screen_home():
 
         # Load completed conversations for this student
         completed = get_completed_conv_ids(s["name"])
+        overrides = get_curriculum_overrides()
+
+        # Get any teacher-added extra conversations for this topic
+        try:
+            extra_docs = db.collection("extra_conversations").where("topic_key","==",chosen_key).stream() if db else []
+            extra_convs = [d.to_dict() for d in extra_docs]
+        except: extra_convs = []
 
         st.markdown("#### Choose a conversation")
-        convs = topic["conversations"]
+        # Merge built-in + extra, filter out hidden
+        all_convs = topic["conversations"] + extra_convs
+        convs = [c for c in all_convs if not overrides.get(c["id"],{}).get("hidden", False)]
         for i, conv in enumerate(convs):
             already_done = conv["id"] in completed
             col1, col2 = st.columns([4, 1])
@@ -775,6 +802,23 @@ def screen_home():
         screen_history_tab(s)
 
 
+def delete_student_session(student_name: str, session_id: str):
+    if db is None: return
+    try:
+        sid = student_name.lower().replace(" ", "_")
+        sess_ref = db.collection("students").document(sid).collection("sessions").document(session_id)
+        # delete subcollection messages first
+        msgs = sess_ref.collection("messages").stream()
+        for m in msgs:
+            m.reference.delete()
+        sess_ref.delete()
+        # decrement totals
+        db.collection("students").document(sid).update({
+            "total_sessions": firestore.INCREMENT(-1),
+        })
+    except Exception as e:
+        st.error(f"Could not delete session: {e}")
+
 def screen_history_tab(s):
     sessions = get_past_sessions(s["name"])
     if not sessions:
@@ -782,12 +826,12 @@ def screen_history_tab(s):
         return
     st.markdown(f"**{len(sessions)} sessions completed**")
     for sess in sessions:
-        date_str = sess.get("started_at", "")[:10]
-        msgs     = sess.get("message_count", 0)
-        title    = sess.get("conv_title", sess.get("conversation", "Session"))
-        topic_id = sess.get("topic", "")
+        date_str   = sess.get("started_at", "")[:10]
+        msgs       = sess.get("message_count", 0)
+        title      = sess.get("conv_title", sess.get("conversation", "Session"))
+        topic_id   = sess.get("topic", "")
         topic_icon = CURRICULUM.get(topic_id, {}).get("icon", "📖")
-        col1, col2 = st.columns([4, 1])
+        col1, col2, col3 = st.columns([4, 1, 1])
         with col1:
             st.markdown(f"**{topic_icon} {title}**")
             st.caption(f"{date_str} · {msgs} messages")
@@ -795,6 +839,11 @@ def screen_history_tab(s):
             if st.button("View →", key=f"view_{sess['id']}", use_container_width=True):
                 st.session_state.view_session = sess
                 st.session_state.screen = "transcript"
+                st.rerun()
+        with col3:
+            if st.button("🗑️", key=f"del_{sess['id']}", use_container_width=True,
+                         help="Delete this session"):
+                delete_student_session(s["name"], sess["id"])
                 st.rerun()
         st.divider()
 
@@ -1159,7 +1208,7 @@ def screen_teacher_student():
         title     = sess.get("conv_title", sess.get("conversation","Session"))
         topic_id  = sess.get("topic","")
         icon      = CURRICULUM.get(topic_id, {}).get("icon","📖")
-        col1, col2 = st.columns([4,1])
+        col1, col2, col3 = st.columns([4,1,1])
         with col1:
             st.markdown(f"**{icon} {title}**")
             st.caption(f"{date_str} · {msgs} messages")
@@ -1167,6 +1216,11 @@ def screen_teacher_student():
             if st.button("View →", key=f"t_sess_{sess['id']}", use_container_width=True):
                 st.session_state.teacher_view_session = {"sess": sess, "student": stu}
                 st.session_state.screen = "teacher_transcript"
+                st.rerun()
+        with col3:
+            if st.button("🗑️", key=f"t_del_{sess['id']}", use_container_width=True,
+                         help="Delete this session"):
+                delete_student_session(stu["name"], sess["id"])
                 st.rerun()
         st.divider()
 
@@ -1215,66 +1269,175 @@ def screen_teacher_transcript():
 # ─────────────────────────────────────────────
 # TEACHER: CURRICULUM EDITOR
 # ─────────────────────────────────────────────
+def get_extra_topics() -> dict:
+    """Custom topics added by teacher, stored in Firestore."""
+    if db is None: return {}
+    try:
+        docs = db.collection("custom_topics").stream()
+        return {d.id: d.to_dict() for d in docs}
+    except: return {}
+
+def get_extra_convs(topic_key: str) -> list:
+    """Extra conversations added by teacher for a topic."""
+    if db is None: return []
+    try:
+        docs = db.collection("extra_conversations").where("topic_key", "==", topic_key).stream()
+        return [d.to_dict() for d in docs]
+    except: return []
+
+def delete_conv_override(conv_id: str):
+    if db is None: return
+    try:
+        db.collection("curriculum_overrides").document(conv_id).delete()
+    except: pass
+
+def delete_extra_conv(conv_id: str):
+    if db is None: return
+    try:
+        db.collection("extra_conversations").document(conv_id).delete()
+    except: pass
+
+def delete_custom_topic(topic_id: str):
+    if db is None: return
+    try:
+        db.collection("custom_topics").document(topic_id).delete()
+        # also delete any extra convs for this topic
+        docs = db.collection("extra_conversations").where("topic_key","==",topic_id).stream()
+        for d in docs: d.reference.delete()
+    except: pass
+
 def screen_teacher_curriculum():
     st.markdown("### Edit curriculum")
-    st.caption("Changes save to Firestore and apply immediately for all students.")
+    st.caption("Changes apply immediately for all students.")
 
-    overrides = get_curriculum_overrides()
+    overrides    = get_curriculum_overrides()
+    extra_topics = get_extra_topics()
 
-    topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in CURRICULUM.items()}
+    # Build combined topic list: hardcoded + custom
+    all_topics = {**CURRICULUM}
+    for tid, td in extra_topics.items():
+        all_topics[tid] = td
+
+    topic_options = {f'{v.get("icon","📘")} {v["title"]}': k for k, v in all_topics.items()}
     chosen_label  = st.selectbox("Topic", list(topic_options.keys()),
                                  key="teacher_topic_sel", label_visibility="collapsed")
     chosen_key    = topic_options[chosen_label]
-    topic         = CURRICULUM[chosen_key]
+    topic         = all_topics[chosen_key]
+    is_custom_topic = chosen_key in extra_topics
+
+    # ── Delete / info for topic ──
+    tcol1, tcol2 = st.columns([4,1])
+    with tcol1:
+        if is_custom_topic:
+            st.caption("⚡ Custom topic")
+    with tcol2:
+        if is_custom_topic:
+            if st.button("🗑️ Delete topic", key="del_topic", use_container_width=True):
+                delete_custom_topic(chosen_key)
+                st.success("Topic deleted.")
+                st.rerun()
 
     st.divider()
-    convs = topic["conversations"]
 
-    for conv in convs:
-        # Merge any existing override
-        merged = {**conv, **overrides.get(conv["id"], {})}
+    # ── Existing conversations ──
+    convs       = topic.get("conversations", [])
+    extra_convs = get_extra_convs(chosen_key)
+    all_convs   = convs + extra_convs
+
+    for conv in all_convs:
+        merged    = {**conv, **overrides.get(conv["id"], {})}
         is_edited = conv["id"] in overrides
-        label = f"{'✏️ ' if is_edited else ''}{merged['title']}"
+        is_extra  = conv in extra_convs
+        badge     = "✏️ " if is_edited else ("➕ " if is_extra else "")
+        label     = f"{badge}{merged['title']}"
 
         with st.expander(label, expanded=False):
             with st.form(key=f"edit_form_{conv['id']}"):
-                new_title    = st.text_input("Title",          value=merged["title"])
-                new_goal     = st.text_area("Goal",            value=merged["goal"],     height=80)
-                new_starter  = st.text_area("Starter question",value=merged["starter"],  height=80)
-                new_vocab    = st.text_area("Vocabulary",      value=merged["vocabulary"],height=60)
-                new_struct   = st.text_area("Target structures",value=merged["structures"],height=80)
+                new_title    = st.text_input("Title",           value=merged["title"])
+                new_goal     = st.text_area("Goal",             value=merged.get("goal",""),     height=80)
+                new_starter  = st.text_area("Starter question", value=merged.get("starter",""),  height=80)
+                new_vocab    = st.text_area("Vocabulary",       value=merged.get("vocabulary",""),height=60)
+                new_struct   = st.text_area("Target structures",value=merged.get("structures",""),height=80)
                 new_followups= st.text_area(
                     "Follow-up questions (one per line)",
                     value="\n".join(merged.get("followups", [])),
                     height=160
                 )
-                col1, col2 = st.columns(2)
-                with col1:
-                    saved = st.form_submit_button("💾 Save changes", use_container_width=True)
-                with col2:
-                    reset = st.form_submit_button("↩️ Reset to original", use_container_width=True)
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    saved = st.form_submit_button("💾 Save", use_container_width=True)
+                with c2:
+                    reset = st.form_submit_button("↩️ Reset", use_container_width=True)
+                with c3:
+                    delete = st.form_submit_button("🗑️ Delete", use_container_width=True)
 
                 if saved:
                     followups_list = [q.strip() for q in new_followups.split("\n") if q.strip()]
                     save_curriculum_override(conv["id"], {
-                        "title":      new_title,
-                        "goal":       new_goal,
-                        "starter":    new_starter,
-                        "vocabulary": new_vocab,
-                        "structures": new_struct,
-                        "followups":  followups_list,
+                        "title": new_title, "goal": new_goal,
+                        "starter": new_starter, "vocabulary": new_vocab,
+                        "structures": new_struct, "followups": followups_list,
                     })
-                    st.success("Saved! Students will see this immediately.")
+                    st.success("Saved!")
                     st.rerun()
 
                 if reset:
-                    if db is not None:
-                        try:
-                            db.collection("curriculum_overrides").document(conv["id"]).delete()
-                            st.success("Reset to original.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Could not reset: {e}")
+                    delete_conv_override(conv["id"])
+                    st.success("Reset to original.")
+                    st.rerun()
+
+                if delete:
+                    if is_extra:
+                        delete_extra_conv(conv["id"])
+                        st.success("Conversation deleted.")
+                    else:
+                        # Hide built-in conv by marking it hidden in overrides
+                        save_curriculum_override(conv["id"], {**merged, "hidden": True})
+                        st.success("Conversation hidden from students.")
+                    st.rerun()
+
+    # ── Add new conversation ──
+    st.divider()
+    with st.expander("➕ Add a new conversation to this topic"):
+        with st.form("add_conv_form"):
+            nc_title    = st.text_input("Title")
+            nc_goal     = st.text_area("Goal", height=70)
+            nc_starter  = st.text_area("Starter question", height=70)
+            nc_vocab    = st.text_input("Vocabulary (comma-separated)")
+            nc_struct   = st.text_area("Target structures", height=70)
+            nc_followups= st.text_area("Follow-up questions (one per line)", height=120)
+            if st.form_submit_button("Add conversation", use_container_width=True):
+                if not nc_title.strip():
+                    st.error("Title is required.")
+                else:
+                    new_id = f"custom_{uuid.uuid4().hex[:8]}"
+                    db.collection("extra_conversations").document(new_id).set({
+                        "id": new_id, "topic_key": chosen_key,
+                        "title": nc_title, "goal": nc_goal,
+                        "starter": nc_starter, "vocabulary": nc_vocab,
+                        "structures": nc_struct,
+                        "followups": [q.strip() for q in nc_followups.split("\n") if q.strip()],
+                    })
+                    st.success("Conversation added!")
+                    st.rerun()
+
+    # ── Add new topic ──
+    st.divider()
+    with st.expander("➕ Add a completely new topic"):
+        with st.form("add_topic_form"):
+            nt_icon  = st.text_input("Icon (emoji)", value="📘")
+            nt_title = st.text_input("Topic title")
+            if st.form_submit_button("Create topic", use_container_width=True):
+                if not nt_title.strip():
+                    st.error("Title is required.")
+                else:
+                    new_tid = f"custom_topic_{uuid.uuid4().hex[:8]}"
+                    db.collection("custom_topics").document(new_tid).set({
+                        "title": nt_title, "icon": nt_icon,
+                        "conversations": []
+                    })
+                    st.success(f"Topic '{nt_title}' created! Now add conversations to it above.")
+                    st.rerun()
 
 
 # ─────────────────────────────────────────────
