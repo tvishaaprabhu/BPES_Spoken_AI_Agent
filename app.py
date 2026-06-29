@@ -586,6 +586,8 @@ for k, v in {
     "chat_history": [], "session_id": None,
     "message_count": 0, "session_start": None,
     "last_audio_key": None, "pending_audio": None,
+    "mic_key": 0,          # incremented after every processed turn so widget always re-mounts fresh
+    "processing": False,   # flag to block double-submissions while spinner is running
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -728,33 +730,43 @@ def screen_chat():
 
     # ── Mic input only ──
     st.markdown("**🎤 Tap to speak your answer:**")
-    try:
-        from audio_recorder_streamlit import audio_recorder
-        audio_bytes = audio_recorder(
-            text="",
-            recording_color="#E24B4A",
-            neutral_color="#1D9E75",
-            icon_name="microphone",
-            icon_size="2x",
-            pause_threshold=2.0,
-            key="mic_input"
-        )
-        if audio_bytes and len(audio_bytes) > 2000:
-            audio_key = hash(audio_bytes)
-            if audio_key != st.session_state.last_audio_key:
-                st.session_state.last_audio_key = audio_key
-                with st.spinner("Transcribing your answer…"):
-                    try:
-                        user_text = transcribe(audio_bytes)
-                    except Exception as e:
-                        st.error(f"Could not transcribe audio: {e}"); return
-                if user_text.strip():
-                    process_message(user_text.strip())
-                else:
-                    st.warning("Couldn't hear that clearly — please try again.")
-        st.caption("Tap the mic, speak, then tap again to stop.")
-    except ImportError:
-        st.error("audio-recorder-streamlit is not installed. Add it to requirements.txt.")
+
+    if st.session_state.get("processing"):
+        st.info("⏳ Processing your answer…")
+    else:
+        try:
+            from audio_recorder_streamlit import audio_recorder
+            # mic_key increments after every processed turn so the widget
+            # fully re-mounts — fixes both disappearing mic and double-click-to-start.
+            audio_bytes = audio_recorder(
+                text="",
+                recording_color="#E24B4A",
+                neutral_color="#1D9E75",
+                icon_name="microphone",
+                icon_size="2x",
+                pause_threshold=2.0,
+                key=f"mic_{st.session_state.get('mic_key', 0)}"
+            )
+            if audio_bytes is not None and len(audio_bytes) > 2000:
+                audio_key = hash(audio_bytes)
+                if audio_key != st.session_state.last_audio_key:
+                    st.session_state.last_audio_key = audio_key
+                    st.session_state.processing = True
+                    st.session_state.mic_key = st.session_state.get("mic_key", 0) + 1
+                    with st.spinner("Transcribing your answer…"):
+                        try:
+                            user_text = transcribe(audio_bytes)
+                        except Exception as e:
+                            st.session_state.processing = False
+                            st.error(f"Could not transcribe audio: {e}"); return
+                    if user_text.strip():
+                        process_message(user_text.strip())
+                    else:
+                        st.session_state.processing = False
+                        st.warning("Couldn't hear that clearly — please try again.")
+            st.caption("Tap 🟢 mic → speak → tap again to stop. Wait for the AI to respond.")
+        except ImportError:
+            st.error("audio-recorder-streamlit is not installed. Add it to requirements.txt.")
 
 def process_message(user_text: str):
     s = st.session_state.student
@@ -786,6 +798,7 @@ def process_message(user_text: str):
                 {"role": "assistant", "content": ai_text, "timestamp": datetime.utcnow().isoformat()})
     # Store audio in session state — it plays at the top of the next render pass
     st.session_state.pending_audio = audio_b64
+    st.session_state.processing = False  # re-enable mic before rerun
     st.rerun()
 
 def end_session():
