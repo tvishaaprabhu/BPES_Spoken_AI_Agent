@@ -7,17 +7,6 @@ import uuid
 import re
 import base64
 import os
-import subprocess
-
-# Tell pydub where ffmpeg is — needed for streamlit-audiorecorder on Streamlit Cloud
-try:
-    from pydub import AudioSegment
-    _ffmpeg = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True).stdout.strip()
-    if _ffmpeg:
-        AudioSegment.converter = _ffmpeg
-except Exception:
-    pass
-
 # ─────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────
@@ -511,6 +500,36 @@ def log_message(student_name: str, session_id: str, msg: dict):
           .collection("messages").add(msg)
     except: pass
 
+def get_past_sessions(student_name: str) -> list:
+    if db is None: return []
+    try:
+        sid = student_name.lower().replace(" ", "_")
+        docs = db.collection("students").document(sid)\
+                 .collection("sessions").order_by("started_at", direction=firestore.Query.DESCENDING)\
+                 .limit(50).stream()
+        return [d.to_dict() for d in docs]
+    except: return []
+
+def get_session_messages(student_name: str, session_id: str) -> list:
+    if db is None: return []
+    try:
+        sid = student_name.lower().replace(" ", "_")
+        docs = db.collection("students").document(sid)\
+                 .collection("sessions").document(session_id)\
+                 .collection("messages").order_by("timestamp").stream()
+        return [d.to_dict() for d in docs]
+    except: return []
+
+def get_completed_conv_ids(student_name: str) -> dict:
+    """Returns {conv_id: session_date_str} for all completed conversations."""
+    sessions = get_past_sessions(student_name)
+    done = {}
+    for s in sessions:
+        cid = s.get("conversation")
+        if cid and cid not in done:
+            done[cid] = s.get("started_at", "")[:10]
+    return done
+
 
 # ─────────────────────────────────────────────
 # OPENAI HELPERS
@@ -596,8 +615,10 @@ for k, v in {
     "chat_history": [], "session_id": None,
     "message_count": 0, "session_start": None,
     "last_audio_key": None, "pending_audio": None,
-    "mic_key": 0,          # incremented after every processed turn so widget always re-mounts fresh
-    "processing": False,   # flag to block double-submissions while spinner is running
+    "mic_key": 0,
+    "processing": False,
+    "editing_index": None,   # index of user message being edited
+    "view_session": None,    # session dict being viewed in history
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -631,38 +652,89 @@ def screen_home():
     s = st.session_state.student
     st.markdown(
         f'<div class="welcome-banner"><h2>Hello, {s["name"]} 👋</h2>'
-        f'<p>{s.get("level", "")} · Age {s["age"]}</p></div>',
+        f'<p>Age {s["age"]} · {s.get("level", "")}</p></div>',
         unsafe_allow_html=True
     )
 
-    # ── Topic picker ──
-    st.markdown("#### Choose a topic")
-    topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in CURRICULUM.items()}
-    chosen_label = st.selectbox("Topic", list(topic_options.keys()), label_visibility="collapsed")
-    chosen_key   = topic_options[chosen_label]
-    topic        = CURRICULUM[chosen_key]
-    st.session_state.selected_topic = chosen_key
+    # Tab: Practice vs History
+    tab_practice, tab_history = st.tabs(["📚 Practice", "📋 Past sessions"])
 
-    # ── Conversation picker ──
-    st.markdown("#### Choose a conversation")
-    convs = topic["conversations"]
-    for i, conv in enumerate(convs):
+    with tab_practice:
+        st.markdown("#### Choose a topic")
+        topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in CURRICULUM.items()}
+        chosen_label = st.selectbox("Topic", list(topic_options.keys()), label_visibility="collapsed")
+        chosen_key   = topic_options[chosen_label]
+        topic        = CURRICULUM[chosen_key]
+        st.session_state.selected_topic = chosen_key
+
+        # Load completed conversations for this student
+        completed = get_completed_conv_ids(s["name"])
+
+        st.markdown("#### Choose a conversation")
+        convs = topic["conversations"]
+        for i, conv in enumerate(convs):
+            already_done = conv["id"] in completed
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                if already_done:
+                    st.markdown(f"**{conv['title']}** ✅")
+                    st.caption(f"{conv['goal']} · Done on {completed[conv['id']]}")
+                else:
+                    st.markdown(f"**{conv['title']}**")
+                    st.caption(conv["goal"])
+            with col2:
+                btn_label = "Redo →" if already_done else "Start →"
+                if st.button(btn_label, key=f"conv_{conv['id']}", use_container_width=True):
+                    if already_done:
+                        st.session_state.pending_already_done = {
+                            "conv": conv,
+                            "date": completed[conv["id"]]
+                        }
+                        st.session_state.screen = "already_done"
+                        st.rerun()
+                    else:
+                        launch_session(conv)
+            if i < len(convs) - 1:
+                st.divider()
+
+    with tab_history:
+        screen_history_tab(s)
+
+
+def screen_history_tab(s):
+    sessions = get_past_sessions(s["name"])
+    if not sessions:
+        st.caption("No sessions yet — complete your first conversation to see it here.")
+        return
+    st.markdown(f"**{len(sessions)} sessions completed**")
+    for sess in sessions:
+        date_str = sess.get("started_at", "")[:10]
+        msgs     = sess.get("message_count", 0)
+        title    = sess.get("conv_title", sess.get("conversation", "Session"))
+        topic_id = sess.get("topic", "")
+        topic_icon = CURRICULUM.get(topic_id, {}).get("icon", "📖")
         col1, col2 = st.columns([4, 1])
         with col1:
-            st.markdown(f"**{conv['title']}**")
-            st.caption(conv["goal"])
+            st.markdown(f"**{topic_icon} {title}**")
+            st.caption(f"{date_str} · {msgs} messages")
         with col2:
-            if st.button("Start →", key=f"conv_{conv['id']}", use_container_width=True):
-                st.session_state.current_conv   = conv
-                st.session_state.session_id     = str(uuid.uuid4())
-                st.session_state.chat_history   = []
-                st.session_state.message_count  = 0
-                st.session_state.session_start  = datetime.utcnow().isoformat()
-                st.session_state.last_audio_key = None
-                st.session_state.screen         = "chat"
+            if st.button("View →", key=f"view_{sess['id']}", use_container_width=True):
+                st.session_state.view_session = sess
+                st.session_state.screen = "transcript"
                 st.rerun()
-        if i < len(convs) - 1:
-            st.divider()
+        st.divider()
+
+
+def launch_session(conv):
+    st.session_state.current_conv   = conv
+    st.session_state.session_id     = str(uuid.uuid4())
+    st.session_state.chat_history   = []
+    st.session_state.message_count  = 0
+    st.session_state.session_start  = datetime.utcnow().isoformat()
+    st.session_state.last_audio_key = None
+    st.session_state.editing_index  = None
+    st.session_state.screen         = "chat"
+    st.rerun()
 
 
 # ─────────────────────────────────────────────
@@ -721,20 +793,57 @@ def screen_chat():
         )
 
     # ── Render chat history ──
-    for msg in st.session_state.chat_history:
+    last_ai_idx  = max((i for i, m in enumerate(st.session_state.chat_history) if m["role"] == "assistant"), default=None)
+    last_usr_idx = max((i for i, m in enumerate(st.session_state.chat_history) if m["role"] == "user"), default=None)
+
+    for idx, msg in enumerate(st.session_state.chat_history):
         if msg["role"] == "user":
             with st.chat_message("user"):
-                st.markdown(f"🎤 *{msg['content']}*")
+                # Edit mode for this message
+                if st.session_state.editing_index == idx:
+                    edited = st.text_input("Edit your response:", value=msg["content"],
+                                           key=f"edit_input_{idx}")
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        if st.button("✅ Send edited", key=f"send_edit_{idx}", use_container_width=True):
+                            # Remove everything after this user message and re-send
+                            st.session_state.chat_history = st.session_state.chat_history[:idx]
+                            st.session_state.editing_index = None
+                            st.session_state.processing = True
+                            st.session_state.mic_key += 1
+                            process_message(edited.strip())
+                    with c2:
+                        if st.button("✖ Cancel", key=f"cancel_edit_{idx}", use_container_width=True):
+                            st.session_state.editing_index = None
+                            st.rerun()
+                else:
+                    st.markdown(f"🎤 *{msg['content']}*")
+                    # Show edit button only on the last user message
+                    if idx == last_usr_idx and not st.session_state.get("processing"):
+                        if st.button("✏️ Edit", key=f"edit_btn_{idx}"):
+                            st.session_state.editing_index = idx
+                            st.rerun()
         else:
             with st.chat_message("assistant", avatar="🎙️"):
                 if msg.get("is_opener"):
-                    # Opener: just show the plain text, no feedback card
                     st.markdown(msg["content"])
                 else:
                     render_response(msg.get("sections", {
                         "raw": msg["content"],
                         "said": "", "question": "", "feedback": "", "enhancement": ""
                     }))
+                    # Redo button only on the last AI message
+                    if idx == last_ai_idx and not st.session_state.get("processing"):
+                        if st.button("🔄 Replay question", key=f"redo_{idx}"):
+                            sections = msg.get("sections", {})
+                            q_text = sections.get("question", msg["content"])
+                            try:
+                                client = get_openai_client()
+                                tts_resp = client.audio.speech.create(
+                                    model="tts-1", voice="shimmer", input=q_text)
+                                st.session_state.pending_audio = base64.b64encode(tts_resp.content).decode()
+                            except: pass
+                            st.rerun()
 
     st.divider()
 
@@ -832,6 +941,72 @@ def end_session():
 
 
 # ─────────────────────────────────────────────
+# SCREEN: ALREADY DONE WARNING
+# ─────────────────────────────────────────────
+def screen_already_done():
+    data = st.session_state.get("pending_already_done", {})
+    conv = data.get("conv", {})
+    date = data.get("date", "")
+    st.markdown("## ✅ You've done this before")
+    st.markdown(
+        f"You already completed **{conv.get('title', 'this conversation')}** on **{date}**."
+    )
+    st.markdown("Would you like to do it again?")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("▶️ Do it again", use_container_width=True, type="primary"):
+            st.session_state.pending_already_done = None
+            launch_session(conv)
+    with col2:
+        if st.button("← Back", use_container_width=True):
+            st.session_state.pending_already_done = None
+            st.session_state.screen = "home"
+            st.rerun()
+
+
+# ─────────────────────────────────────────────
+# SCREEN: TRANSCRIPT VIEWER
+# ─────────────────────────────────────────────
+def screen_transcript():
+    sess = st.session_state.view_session
+    if not sess:
+        st.session_state.screen = "home"; st.rerun(); return
+
+    if st.button("← Back to sessions"):
+        st.session_state.view_session = None
+        st.session_state.screen = "home"
+        st.rerun()
+
+    st.markdown(f"## 📋 {sess.get('conv_title', 'Session')}")
+    date_str = sess.get("started_at", "")[:10]
+    msgs_count = sess.get("message_count", 0)
+    st.caption(f"{date_str} · {msgs_count} messages")
+    st.divider()
+
+    messages = get_session_messages(
+        st.session_state.student["name"], sess["id"]
+    )
+    if not messages:
+        st.info("No messages saved for this session.")
+        return
+
+    for msg in messages:
+        role = msg.get("role", "user")
+        text = msg.get("content", "")
+        if role == "user":
+            with st.chat_message("user"):
+                st.markdown(f"🎤 *{text}*")
+        else:
+            with st.chat_message("assistant", avatar="🎙️"):
+                sections = parse_response(text)
+                if any([sections["said"], sections["question"],
+                        sections["feedback"], sections["enhancement"]]):
+                    render_response(sections)
+                else:
+                    st.markdown(text)
+
+
+# ─────────────────────────────────────────────
 # ROUTER
 # ─────────────────────────────────────────────
 if st.session_state.screen == "login":
@@ -840,3 +1015,7 @@ elif st.session_state.screen == "home":
     screen_home()
 elif st.session_state.screen == "chat":
     screen_chat()
+elif st.session_state.screen == "already_done":
+    screen_already_done()
+elif st.session_state.screen == "transcript":
+    screen_transcript()
