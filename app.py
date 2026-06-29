@@ -7,6 +7,16 @@ import uuid
 import re
 import base64
 import os
+import subprocess
+
+# Tell pydub where ffmpeg is — needed for streamlit-audiorecorder on Streamlit Cloud
+try:
+    from pydub import AudioSegment
+    _ffmpeg = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True).stdout.strip()
+    if _ffmpeg:
+        AudioSegment.converter = _ffmpeg
+except Exception:
+    pass
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
