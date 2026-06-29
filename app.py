@@ -101,13 +101,6 @@ db = init_firebase()
 
 
 # ─────────────────────────────────────────────
-# OPENAI CLIENT
-# ─────────────────────────────────────────────
-# Add OPENAI_API_KEY to .streamlit/secrets.toml
-client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-
-# ─────────────────────────────────────────────
 # CURRICULUM DATA
 # ─────────────────────────────────────────────
 LEVELS = {
@@ -467,6 +460,7 @@ def screen_home():
 # SEND TO GPT
 # ─────────────────────────────────────────────
 def get_ai_response(user_text: str) -> str:
+    client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     student = st.session_state.student
     mod     = st.session_state.selected_module
     system  = build_system_prompt(
@@ -475,8 +469,6 @@ def get_ai_response(user_text: str) -> str:
         module_title = mod["title"],
         module_desc  = mod["desc"],
     )
-
-    # Build message list — only role/content for the API
     messages = [{"role": "system", "content": system}]
     for msg in st.session_state.chat_history:
         messages.append({"role": msg["role"], "content": msg["content"]})
@@ -494,6 +486,7 @@ def get_ai_response(user_text: str) -> str:
 # TRANSCRIBE AUDIO
 # ─────────────────────────────────────────────
 def transcribe_audio(audio_bytes: bytes) -> str:
+    client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     with open("temp_audio.wav", "wb") as f:
         f.write(audio_bytes)
     with open("temp_audio.wav", "rb") as f:
