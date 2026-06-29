@@ -585,7 +585,7 @@ for k, v in {
     "selected_topic": None, "current_conv": None,
     "chat_history": [], "session_id": None,
     "message_count": 0, "session_start": None,
-    "last_audio_key": None,
+    "last_audio_key": None, "pending_audio": None,
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -675,23 +675,38 @@ def screen_chat():
     # ── AI opener (first turn only) ──
     if not st.session_state.chat_history:
         with st.spinner("Starting conversation…"):
+            # Opener is just a plain greeting + starter question — no 4-section format
             opener_prompt = (
-                f"Start the conversation now. Greet the student warmly by name — their name is {s['name']}. "
-                f"Then ask your starter question: \"{conv['starter']}\" "
-                f"Use the 4-section format."
+                f"Greet the student warmly by name — their name is {s['name']}. "
+                f"Then ask this exact starter question: \"{conv['starter']}\" "
+                f"Keep it short, warm and natural. Do NOT use the 4-section format for this opening message."
             )
             try:
-                ai_text  = get_ai_response(opener_prompt)
-                sections = parse_response(ai_text)
-                audio    = text_to_speech(ai_text)
+                ai_text = get_ai_response(opener_prompt)
+                # Generate TTS for the full opener
+                client = get_openai_client()
+                tts_resp = client.audio.speech.create(model="tts-1", voice="shimmer", input=ai_text)
+                audio_b64 = base64.b64encode(tts_resp.content).decode()
                 st.session_state.chat_history.append({
-                    "role": "assistant", "content": ai_text, "sections": sections
+                    "role": "assistant", "content": ai_text,
+                    "sections": None, "is_opener": True
                 })
+                # Store audio to play during render, not during processing
+                st.session_state.pending_audio = audio_b64
                 log_message(s["name"], st.session_state.session_id,
-                            {"role": "assistant", "content": ai_text, "timestamp": datetime.utcnow().isoformat()})
-                autoplay_audio(audio)
+                            {"role": "assistant", "content": ai_text,
+                             "timestamp": datetime.utcnow().isoformat()})
             except Exception as e:
                 st.error(f"Error starting conversation: {e}"); return
+
+    # ── Play any pending audio BEFORE rendering (survives the rerun) ──
+    if st.session_state.get("pending_audio"):
+        b64 = st.session_state.pending_audio
+        st.session_state.pending_audio = None
+        st.markdown(
+            f'<audio autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>',
+            unsafe_allow_html=True
+        )
 
     # ── Render chat history ──
     for msg in st.session_state.chat_history:
@@ -700,8 +715,14 @@ def screen_chat():
                 st.markdown(f"🎤 *{msg['content']}*")
         else:
             with st.chat_message("assistant", avatar="🎙️"):
-                render_response(msg.get("sections", {"raw": msg["content"],
-                                "said":"","question":"","feedback":"","enhancement":""}))
+                if msg.get("is_opener"):
+                    # Opener: just show the plain text, no feedback card
+                    st.markdown(msg["content"])
+                else:
+                    render_response(msg.get("sections", {
+                        "raw": msg["content"],
+                        "said": "", "question": "", "feedback": "", "enhancement": ""
+                    }))
 
     st.divider()
 
@@ -731,7 +752,7 @@ def screen_chat():
                     process_message(user_text.strip())
                 else:
                     st.warning("Couldn't hear that clearly — please try again.")
-        st.caption("Tap the mic, speak, then tap again to stop. Wait for the AI to respond.")
+        st.caption("Tap the mic, speak, then tap again to stop.")
     except ImportError:
         st.error("audio-recorder-streamlit is not installed. Add it to requirements.txt.")
 
@@ -746,14 +767,25 @@ def process_message(user_text: str):
         try:
             ai_text  = get_ai_response(user_text)
             sections = parse_response(ai_text)
-            audio    = text_to_speech(ai_text)
+            # Get spoken text (next question only) and generate audio
+            try:
+                spoken = ai_text.split("❓ Next question:")[1].split("✅ Feedback:")[0].strip()
+            except:
+                spoken = ai_text
+            client = get_openai_client()
+            tts_resp = client.audio.speech.create(model="tts-1", voice="shimmer", input=spoken)
+            audio_b64 = base64.b64encode(tts_resp.content).decode()
         except Exception as e:
             st.error(f"Error getting response: {e}"); return
 
-    st.session_state.chat_history.append({"role": "assistant", "content": ai_text, "sections": sections})
+    st.session_state.chat_history.append({
+        "role": "assistant", "content": ai_text,
+        "sections": sections, "is_opener": False
+    })
     log_message(s["name"], st.session_state.session_id,
                 {"role": "assistant", "content": ai_text, "timestamp": datetime.utcnow().isoformat()})
-    autoplay_audio(audio)
+    # Store audio in session state — it plays at the top of the next render pass
+    st.session_state.pending_audio = audio_b64
     st.rerun()
 
 def end_session():
