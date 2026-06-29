@@ -7,8 +7,6 @@ import uuid
 import json
 import re
 
-st.write(list(st.secrets.keys()))
-
 # ─────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────
