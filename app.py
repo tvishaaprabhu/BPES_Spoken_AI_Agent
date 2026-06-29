@@ -630,6 +630,7 @@ for k, v in {
 def screen_login():
     st.markdown("## 🎙️ SpeakUp")
     st.markdown("##### AI English conversation practice · Ages 13–17")
+    st.info("🔊 Make sure your speaker volume is turned up — the AI will speak its questions aloud.")
     st.divider()
     with st.form("login"):
         name = st.text_input("Full name", placeholder="e.g. Aanya Sharma")
@@ -652,7 +653,7 @@ def screen_home():
     s = st.session_state.student
     st.markdown(
         f'<div class="welcome-banner"><h2>Hello, {s["name"]} 👋</h2>'
-        f'<p>Age {s["age"]} · {s.get("level", "")}</p></div>',
+        f'<p>Age {s["age"]}</p></div>',
         unsafe_allow_html=True
     )
 
@@ -749,7 +750,7 @@ def screen_chat():
     with col1:
         topic = CURRICULUM[st.session_state.selected_topic]
         st.markdown(f"**{topic['icon']} {topic['title']}** — {conv['title']}")
-        st.caption(f"{s['name']} · Age {s['age']}")
+        st.caption(f"Age {s['age']}")
     with col2:
         if st.button("End session", use_container_width=True):
             end_session(); return
@@ -761,9 +762,9 @@ def screen_chat():
         with st.spinner("Starting conversation…"):
             # Opener is just a plain greeting + starter question — no 4-section format
             opener_prompt = (
-                f"Greet the student warmly by name — their name is {s['name']}. "
-                f"Then ask this exact starter question: \"{conv['starter']}\" "
-                f"Keep it short, warm and natural. Do NOT use the 4-section format for this opening message."
+                f"Ask this exact starter question to open the conversation: \"{conv['starter']}\" "
+                f"Do not greet by name. Do not say hello or hi first. "
+                f"Just ask the question naturally and warmly. Do NOT use the 4-section format."
             )
             try:
                 ai_text = get_ai_response(opener_prompt)
@@ -832,17 +833,33 @@ def screen_chat():
                         "raw": msg["content"],
                         "said": "", "question": "", "feedback": "", "enhancement": ""
                     }))
-                    # Redo button only on the last AI message
+                    # Regenerate button only on the last AI message
                     if idx == last_ai_idx and not st.session_state.get("processing"):
-                        if st.button("🔄 Replay question", key=f"redo_{idx}"):
-                            sections = msg.get("sections", {})
-                            q_text = sections.get("question", msg["content"])
-                            try:
-                                client = get_openai_client()
-                                tts_resp = client.audio.speech.create(
-                                    model="tts-1", voice="shimmer", input=q_text)
-                                st.session_state.pending_audio = base64.b64encode(tts_resp.content).decode()
-                            except: pass
+                        if st.button("🔄 Ask a different question", key=f"redo_{idx}"):
+                            st.session_state.processing = True
+                            st.session_state.mic_key += 1
+                            with st.spinner("Getting a new question…"):
+                                try:
+                                    regen_text = get_ai_response(
+                                        "Ask me a different follow-up question about the same topic. "
+                                        "Do not repeat the previous question. Use the 4-section format."
+                                    )
+                                    regen_sections = parse_response(regen_text)
+                                    try:
+                                        spoken = regen_text.split("❓ Next question:")[1].split("✅ Feedback:")[0].strip()
+                                    except:
+                                        spoken = regen_sections.get("question", regen_text)
+                                    client = get_openai_client()
+                                    tts_resp = client.audio.speech.create(model="tts-1", voice="shimmer", input=spoken)
+                                    audio_b64 = base64.b64encode(tts_resp.content).decode()
+                                    st.session_state.chat_history[idx] = {
+                                        "role": "assistant", "content": regen_text,
+                                        "sections": regen_sections, "is_opener": False
+                                    }
+                                    st.session_state.pending_audio = audio_b64
+                                except Exception as e:
+                                    st.error(f"Could not regenerate: {e}")
+                            st.session_state.processing = False
                             st.rerun()
 
     st.divider()
@@ -877,15 +894,7 @@ def screen_chat():
                     st.warning("Couldn't hear that clearly — please try again.")
         st.caption("Tap the mic button, speak, then tap stop. The AI will respond automatically.")
 
-        # Fallback text input
-        st.markdown("<hr style='margin:0.5rem 0;opacity:0.2'>", unsafe_allow_html=True)
-        with st.expander("🖊️ Type instead (if mic isn't working)"):
-            with st.form("fallback_form", clear_on_submit=True):
-                typed = st.text_input("Your answer", placeholder="Type your response here…", label_visibility="collapsed")
-                if st.form_submit_button("Send →", use_container_width=True) and typed.strip():
-                    st.session_state.processing = True
-                    st.session_state.mic_key = st.session_state.get("mic_key", 0) + 1
-                    process_message(typed.strip())
+
 
 
 def process_message(user_text: str):
