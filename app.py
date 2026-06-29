@@ -728,26 +728,21 @@ def screen_chat():
 
     st.divider()
 
-    # ── Mic input only ──
-    st.markdown("**🎤 Tap to speak your answer:**")
-
+    # ── Mic input — streamlit-audiorecorder (single-tap, no double-click) ──
     if st.session_state.get("processing"):
         st.info("⏳ Processing your answer…")
     else:
+        st.markdown("**🎤 Tap once to record. Tap again to stop.**")
         try:
-            from audio_recorder_streamlit import audio_recorder
-            # mic_key increments after every processed turn so the widget
-            # fully re-mounts — fixes both disappearing mic and double-click-to-start.
-            audio_bytes = audio_recorder(
-                text="",
-                recording_color="#E24B4A",
-                neutral_color="#1D9E75",
-                icon_name="microphone",
-                icon_size="2x",
-                pause_threshold=2.0,
-                key=f"mic_{st.session_state.get('mic_key', 0)}"
+            from audiorecorder import audiorecorder
+            audio = audiorecorder(
+                start_prompt="",
+                stop_prompt="",
+                pause_prompt="",
+                key=f"ar_{st.session_state.get('mic_key', 0)}"
             )
-            if audio_bytes is not None and len(audio_bytes) > 2000:
+            if len(audio) > 0:
+                audio_bytes = audio.export(format="wav").read()
                 audio_key = hash(audio_bytes)
                 if audio_key != st.session_state.last_audio_key:
                     st.session_state.last_audio_key = audio_key
@@ -758,15 +753,25 @@ def screen_chat():
                             user_text = transcribe(audio_bytes)
                         except Exception as e:
                             st.session_state.processing = False
-                            st.error(f"Could not transcribe audio: {e}"); return
+                            st.error(f"Transcription failed: {e}"); return
                     if user_text.strip():
                         process_message(user_text.strip())
                     else:
                         st.session_state.processing = False
                         st.warning("Couldn't hear that clearly — please try again.")
-            st.caption("Tap 🟢 mic → speak → tap again to stop. Wait for the AI to respond.")
         except ImportError:
-            st.error("audio-recorder-streamlit is not installed. Add it to requirements.txt.")
+            st.error("streamlit-audiorecorder not installed — add it to requirements.txt")
+
+        # Fallback text input
+        st.markdown("<hr style='margin:0.5rem 0;opacity:0.2'>", unsafe_allow_html=True)
+        with st.expander("🖊️ Type instead (if mic isn't working)"):
+            with st.form("fallback_form", clear_on_submit=True):
+                typed = st.text_input("Your answer", placeholder="Type your response here…", label_visibility="collapsed")
+                if st.form_submit_button("Send →", use_container_width=True) and typed.strip():
+                    st.session_state.processing = True
+                    st.session_state.mic_key = st.session_state.get("mic_key", 0) + 1
+                    process_message(typed.strip())
+
 
 def process_message(user_text: str):
     s = st.session_state.student
