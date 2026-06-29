@@ -532,6 +532,52 @@ def get_completed_conv_ids(student_name: str) -> dict:
 
 
 # ─────────────────────────────────────────────
+# TEACHER FIRESTORE HELPERS
+# ─────────────────────────────────────────────
+def get_teacher_password() -> str:
+    if db is None: return ""
+    try:
+        doc = db.collection("config").document("teacher").get()
+        if doc.exists:
+            return doc.to_dict().get("password", "")
+    except: pass
+    return ""
+
+def set_teacher_password(new_pw: str):
+    if db is None: return
+    db.collection("config").document("teacher").set({"password": new_pw})
+
+def get_all_students() -> list:
+    if db is None: return []
+    try:
+        docs = db.collection("students").stream()
+        return sorted([d.to_dict() for d in docs], key=lambda x: x.get("name","").lower())
+    except: return []
+
+def get_curriculum_overrides() -> dict:
+    """Returns {conv_id: {field: value}} overrides stored by teacher."""
+    if db is None: return {}
+    try:
+        docs = db.collection("curriculum_overrides").stream()
+        return {d.id: d.to_dict() for d in docs}
+    except: return {}
+
+def save_curriculum_override(conv_id: str, data: dict):
+    if db is None: return
+    db.collection("curriculum_overrides").document(conv_id).set(data)
+
+def apply_curriculum_overrides(curriculum: dict, overrides: dict) -> dict:
+    """Merge Firestore overrides into the hardcoded curriculum dict."""
+    import copy
+    cur = copy.deepcopy(curriculum)
+    for topic_key, topic in cur.items():
+        for conv in topic["conversations"]:
+            if conv["id"] in overrides:
+                conv.update(overrides[conv["id"]])
+    return cur
+
+
+# ─────────────────────────────────────────────
 # OPENAI HELPERS
 # ─────────────────────────────────────────────
 def get_openai_client():
@@ -540,6 +586,10 @@ def get_openai_client():
 def get_ai_response(user_text: str) -> str:
     client = get_openai_client()
     conv = st.session_state.current_conv
+    # Apply any teacher overrides to this conversation's content
+    overrides = get_curriculum_overrides()
+    if conv["id"] in overrides:
+        conv = {**conv, **overrides[conv["id"]]}
     system = build_system_prompt(st.session_state.student["age"], conv)
     messages = [{"role": "system", "content": system}]
     for m in st.session_state.chat_history:
@@ -617,8 +667,12 @@ for k, v in {
     "last_audio_key": None, "pending_audio": None,
     "mic_key": 0,
     "processing": False,
-    "editing_index": None,   # index of user message being edited
-    "view_session": None,    # session dict being viewed in history
+    "editing_index": None,
+    "view_session": None,
+    "is_teacher": False,
+    "teacher_view_student": None,   # student dict teacher is browsing
+    "teacher_view_session": None,   # session dict teacher is reading
+    "teacher_edit_conv": None,      # conv being edited in curriculum editor
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -632,18 +686,37 @@ def screen_login():
     st.markdown("##### AI English conversation practice · Ages 13–17")
     st.info("🔊 Make sure your speaker volume is turned up — the AI will speak its questions aloud.")
     st.divider()
-    with st.form("login"):
-        name = st.text_input("Full name", placeholder="e.g. Aanya Sharma")
-        age  = st.selectbox("Age", [""] + list(range(13, 18)),
-                            format_func=lambda x: "Select age…" if x == "" else str(x))
-        if st.form_submit_button("Start learning →", use_container_width=True):
-            if not name.strip(): st.error("Please enter your full name.")
-            elif age == "": st.error("Please select your age.")
-            else:
-                st.session_state.student = get_or_create_student(name.strip(), int(age))
-                st.session_state.screen = "home"
-                st.rerun()
-    st.caption("Already used SpeakUp before? Enter your name and age — your progress loads automatically.")
+
+    tab_student, tab_teacher = st.tabs(["👤 Student login", "🏫 Teacher login"])
+
+    with tab_student:
+        with st.form("login_student"):
+            name = st.text_input("Full name", placeholder="e.g. Aanya Sharma")
+            age  = st.selectbox("Age", [""] + list(range(13, 18)),
+                                format_func=lambda x: "Select age…" if x == "" else str(x))
+            if st.form_submit_button("Start learning →", use_container_width=True):
+                if not name.strip(): st.error("Please enter your full name.")
+                elif age == "": st.error("Please select your age.")
+                else:
+                    st.session_state.student = get_or_create_student(name.strip(), int(age))
+                    st.session_state.is_teacher = False
+                    st.session_state.screen = "home"
+                    st.rerun()
+        st.caption("Already used SpeakUp before? Enter your name and age — your progress loads automatically.")
+
+    with tab_teacher:
+        with st.form("login_teacher"):
+            pw = st.text_input("Teacher password", type="password")
+            if st.form_submit_button("Sign in as teacher →", use_container_width=True):
+                correct = get_teacher_password()
+                if not correct:
+                    st.error("No teacher password set yet. Add one in Firestore: config/teacher → password field.")
+                elif pw == correct:
+                    st.session_state.is_teacher = True
+                    st.session_state.screen = "teacher_home"
+                    st.rerun()
+                else:
+                    st.error("Incorrect password.")
 
 
 # ─────────────────────────────────────────────
@@ -1016,6 +1089,217 @@ def screen_transcript():
 
 
 # ─────────────────────────────────────────────
+# TEACHER: HOME — all students
+# ─────────────────────────────────────────────
+def screen_teacher_home():
+    col1, col2 = st.columns([4,1])
+    with col1:
+        st.markdown("## 🏫 Teacher dashboard")
+    with col2:
+        if st.button("Sign out"):
+            st.session_state.is_teacher = False
+            st.session_state.screen = "login"
+            st.rerun()
+
+    tab_students, tab_curriculum, tab_settings = st.tabs(
+        ["👥 Students", "📚 Curriculum editor", "⚙️ Settings"]
+    )
+
+    with tab_students:
+        students = get_all_students()
+        if not students:
+            st.caption("No students have logged in yet.")
+        else:
+            st.markdown(f"**{len(students)} students registered**")
+            st.divider()
+            for stu in students:
+                col1, col2, col3 = st.columns([3, 1, 1])
+                with col1:
+                    st.markdown(f"**{stu['name']}**")
+                    st.caption(f"Age {stu.get('age','')} · {stu.get('total_sessions',0)} sessions · {stu.get('total_messages',0)} messages")
+                with col2:
+                    if st.button("View sessions →", key=f"t_stu_{stu['name']}", use_container_width=True):
+                        st.session_state.teacher_view_student = stu
+                        st.session_state.screen = "teacher_student"
+                        st.rerun()
+                st.divider()
+
+    with tab_curriculum:
+        screen_teacher_curriculum()
+
+    with tab_settings:
+        screen_teacher_settings()
+
+
+# ─────────────────────────────────────────────
+# TEACHER: STUDENT SESSION LIST
+# ─────────────────────────────────────────────
+def screen_teacher_student():
+    stu = st.session_state.teacher_view_student
+    if not stu:
+        st.session_state.screen = "teacher_home"; st.rerun(); return
+
+    if st.button("← Back to students"):
+        st.session_state.teacher_view_student = None
+        st.session_state.screen = "teacher_home"
+        st.rerun()
+
+    st.markdown(f"## {stu['name']}")
+    st.caption(f"Age {stu.get('age','')} · {stu.get('total_sessions',0)} sessions")
+    st.divider()
+
+    sessions = get_past_sessions(stu["name"])
+    if not sessions:
+        st.info("This student has no sessions yet.")
+        return
+
+    for sess in sessions:
+        date_str  = sess.get("started_at","")[:10]
+        msgs      = sess.get("message_count", 0)
+        title     = sess.get("conv_title", sess.get("conversation","Session"))
+        topic_id  = sess.get("topic","")
+        icon      = CURRICULUM.get(topic_id, {}).get("icon","📖")
+        col1, col2 = st.columns([4,1])
+        with col1:
+            st.markdown(f"**{icon} {title}**")
+            st.caption(f"{date_str} · {msgs} messages")
+        with col2:
+            if st.button("View →", key=f"t_sess_{sess['id']}", use_container_width=True):
+                st.session_state.teacher_view_session = {"sess": sess, "student": stu}
+                st.session_state.screen = "teacher_transcript"
+                st.rerun()
+        st.divider()
+
+
+# ─────────────────────────────────────────────
+# TEACHER: TRANSCRIPT VIEWER
+# ─────────────────────────────────────────────
+def screen_teacher_transcript():
+    data = st.session_state.teacher_view_session
+    if not data:
+        st.session_state.screen = "teacher_home"; st.rerun(); return
+
+    sess = data["sess"]
+    stu  = data["student"]
+
+    if st.button(f"← Back to {stu['name']}'s sessions"):
+        st.session_state.teacher_view_session = None
+        st.session_state.screen = "teacher_student"
+        st.rerun()
+
+    st.markdown(f"## 📋 {sess.get('conv_title','Session')}")
+    st.caption(f"{stu['name']} · {sess.get('started_at','')[:10]} · {sess.get('message_count',0)} messages")
+    st.divider()
+
+    messages = get_session_messages(stu["name"], sess["id"])
+    if not messages:
+        st.info("No messages saved for this session.")
+        return
+
+    for msg in messages:
+        role = msg.get("role","user")
+        text = msg.get("content","")
+        if role == "user":
+            with st.chat_message("user"):
+                st.markdown(f"🎤 *{text}*")
+        else:
+            with st.chat_message("assistant", avatar="🎙️"):
+                sections = parse_response(text)
+                if any([sections["said"], sections["question"],
+                        sections["feedback"], sections["enhancement"]]):
+                    render_response(sections)
+                else:
+                    st.markdown(text)
+
+
+# ─────────────────────────────────────────────
+# TEACHER: CURRICULUM EDITOR
+# ─────────────────────────────────────────────
+def screen_teacher_curriculum():
+    st.markdown("### Edit curriculum")
+    st.caption("Changes save to Firestore and apply immediately for all students.")
+
+    overrides = get_curriculum_overrides()
+
+    topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in CURRICULUM.items()}
+    chosen_label  = st.selectbox("Topic", list(topic_options.keys()),
+                                 key="teacher_topic_sel", label_visibility="collapsed")
+    chosen_key    = topic_options[chosen_label]
+    topic         = CURRICULUM[chosen_key]
+
+    st.divider()
+    convs = topic["conversations"]
+
+    for conv in convs:
+        # Merge any existing override
+        merged = {**conv, **overrides.get(conv["id"], {})}
+        is_edited = conv["id"] in overrides
+        label = f"{'✏️ ' if is_edited else ''}{merged['title']}"
+
+        with st.expander(label, expanded=False):
+            with st.form(key=f"edit_form_{conv['id']}"):
+                new_title    = st.text_input("Title",          value=merged["title"])
+                new_goal     = st.text_area("Goal",            value=merged["goal"],     height=80)
+                new_starter  = st.text_area("Starter question",value=merged["starter"],  height=80)
+                new_vocab    = st.text_area("Vocabulary",      value=merged["vocabulary"],height=60)
+                new_struct   = st.text_area("Target structures",value=merged["structures"],height=80)
+                new_followups= st.text_area(
+                    "Follow-up questions (one per line)",
+                    value="\n".join(merged.get("followups", [])),
+                    height=160
+                )
+                col1, col2 = st.columns(2)
+                with col1:
+                    saved = st.form_submit_button("💾 Save changes", use_container_width=True)
+                with col2:
+                    reset = st.form_submit_button("↩️ Reset to original", use_container_width=True)
+
+                if saved:
+                    followups_list = [q.strip() for q in new_followups.split("\n") if q.strip()]
+                    save_curriculum_override(conv["id"], {
+                        "title":      new_title,
+                        "goal":       new_goal,
+                        "starter":    new_starter,
+                        "vocabulary": new_vocab,
+                        "structures": new_struct,
+                        "followups":  followups_list,
+                    })
+                    st.success("Saved! Students will see this immediately.")
+                    st.rerun()
+
+                if reset:
+                    if db is not None:
+                        try:
+                            db.collection("curriculum_overrides").document(conv["id"]).delete()
+                            st.success("Reset to original.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Could not reset: {e}")
+
+
+# ─────────────────────────────────────────────
+# TEACHER: SETTINGS
+# ─────────────────────────────────────────────
+def screen_teacher_settings():
+    st.markdown("### Change teacher password")
+    with st.form("change_pw"):
+        current = st.text_input("Current password", type="password")
+        new_pw  = st.text_input("New password",     type="password")
+        confirm = st.text_input("Confirm new password", type="password")
+        if st.form_submit_button("Update password", use_container_width=True):
+            correct = get_teacher_password()
+            if current != correct:
+                st.error("Current password is wrong.")
+            elif not new_pw:
+                st.error("New password cannot be empty.")
+            elif new_pw != confirm:
+                st.error("Passwords do not match.")
+            else:
+                set_teacher_password(new_pw)
+                st.success("Password updated.")
+
+
+# ─────────────────────────────────────────────
 # ROUTER
 # ─────────────────────────────────────────────
 if st.session_state.screen == "login":
@@ -1028,3 +1312,9 @@ elif st.session_state.screen == "already_done":
     screen_already_done()
 elif st.session_state.screen == "transcript":
     screen_transcript()
+elif st.session_state.screen == "teacher_home":
+    screen_teacher_home()
+elif st.session_state.screen == "teacher_student":
+    screen_teacher_student()
+elif st.session_state.screen == "teacher_transcript":
+    screen_teacher_transcript()
