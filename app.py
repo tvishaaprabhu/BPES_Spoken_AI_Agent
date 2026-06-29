@@ -738,39 +738,35 @@ def screen_chat():
 
     st.divider()
 
-    # ── Mic input — streamlit-audiorecorder (single-tap, no double-click) ──
+    # ── Mic input — st.audio_input (built-in, no library needed) ──
     if st.session_state.get("processing"):
         st.info("⏳ Processing your answer…")
     else:
-        st.markdown("**🎤 Tap once to record. Tap again to stop.**")
-        try:
-            from audiorecorder import audiorecorder
-            audio = audiorecorder(
-                start_prompt="",
-                stop_prompt="",
-                pause_prompt="",
-                key=f"ar_{st.session_state.get('mic_key', 0)}"
-            )
-            if len(audio) > 0:
-                audio_bytes = audio.export(format="wav").read()
-                audio_key = hash(audio_bytes)
-                if audio_key != st.session_state.last_audio_key:
-                    st.session_state.last_audio_key = audio_key
-                    st.session_state.processing = True
-                    st.session_state.mic_key = st.session_state.get("mic_key", 0) + 1
-                    with st.spinner("Transcribing your answer…"):
-                        try:
-                            user_text = transcribe(audio_bytes)
-                        except Exception as e:
-                            st.session_state.processing = False
-                            st.error(f"Transcription failed: {e}"); return
-                    if user_text.strip():
-                        process_message(user_text.strip())
-                    else:
+        st.markdown("**🎤 Tap to record your answer:**")
+        audio = st.audio_input(
+            "Record",
+            label_visibility="collapsed",
+            key=f"audio_{st.session_state.get('mic_key', 0)}"
+        )
+        if audio is not None:
+            audio_bytes = audio.read()
+            audio_key = hash(audio_bytes)
+            if audio_key != st.session_state.last_audio_key:
+                st.session_state.last_audio_key = audio_key
+                st.session_state.processing = True
+                st.session_state.mic_key = st.session_state.get("mic_key", 0) + 1
+                with st.spinner("Transcribing your answer…"):
+                    try:
+                        user_text = transcribe(audio_bytes)
+                    except Exception as e:
                         st.session_state.processing = False
-                        st.warning("Couldn't hear that clearly — please try again.")
-        except ImportError:
-            st.error("streamlit-audiorecorder not installed — add it to requirements.txt")
+                        st.error(f"Transcription failed: {e}"); return
+                if user_text.strip():
+                    process_message(user_text.strip())
+                else:
+                    st.session_state.processing = False
+                    st.warning("Couldn't hear that clearly — please try again.")
+        st.caption("Tap the mic button, speak, then tap stop. The AI will respond automatically.")
 
         # Fallback text input
         st.markdown("<hr style='margin:0.5rem 0;opacity:0.2'>", unsafe_allow_html=True)
