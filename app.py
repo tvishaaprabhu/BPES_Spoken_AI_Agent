@@ -85,6 +85,10 @@ st.markdown("""
 # CURRICULUM — ages 13-17
 # ─────────────────────────────────────────────
 LEVELS = {
+    9:  "Level 1 – Getting Started",
+    10: "Level 2 – Building Confidence",
+    11: "Level 3 – Everyday English",
+    12: "Level 4 – Growing Fluency",
     13: "Level 7 – Functional English",
     14: "Level 8 – Confidence & Public Speaking",
     15: "Level 9 – Real-World English",
@@ -398,6 +402,131 @@ CURRICULUM = {
     },
 }
 
+CURRICULUM_9_12 = {
+    'y1topic1': {
+        'title': 'Introducing Yourself',
+        'icon': '👋',
+        'conversations': [{'id': 'y1t1c1', 'title': 'All About Me', 'goal': 'Student introduces themselves with simple facts — name, class, family, likes.', 'vocabulary': 'name, class, family, like, favourite, live, brother, sister', 'structures': '"My name is…" / "I am in class…" / "I like…" / "I live with…" / "I have a brother/sister called…"', 'starter': "Hi! Let's get to know each other. What is your name and what class are you in?", 'followups': ['What do you like to eat?', 'Do you have any brothers or sisters?', 'What do you like to do after school?', 'What is one thing that makes you special?', 'Who do you live with?']}, {'id': 'y1t1c2', 'title': 'Asking About a Friend', 'goal': 'Student practises asking simple personal questions to learn about someone else.', 'vocabulary': 'ask, friend, hobby, food, dislike, favourite', 'structures': '"What\'s your name?" / "Where do you live?" / "What\'s your favourite…?" / "Do you like…?"', 'starter': 'Imagine you just met a new friend. What is the first question you would ask them?', 'followups': ['What would you ask about their favourite food?', 'What would you ask about their hobby?', "What is something you don't like?", 'What is a question you can ask to learn more about someone?']}],
+    },
+    'y1topic2': {
+        'title': 'Asking Questions',
+        'icon': '❓',
+        'conversations': [{'id': 'y1t2c1', 'title': 'Yes/No and Wh Questions', 'goal': 'Student practises forming and using simple yes/no and wh- questions.', 'vocabulary': 'what, where, when, why, who, do, does, is, are', 'structures': '"Do you like…?" / "Is your name…?" / "What is your favourite…?" / "Where do you live?"', 'starter': "Let's practise asking questions. Can you ask me — do I like tea or coffee?", 'followups': ['Can you ask me what my favourite food is?', 'Can you ask me where I live?', 'Can you ask me why I like something?', "Can you think of a question starting with 'who'?"]}, {'id': 'y1t2c2', 'title': 'Reporter and Celebrity', 'goal': 'Student role-plays asking questions as a reporter interviewing a celebrity.', 'vocabulary': 'interview, reporter, famous, ask, answer, question', 'structures': '"Can I ask you a question?" / "What do you like to do?" / "Why are you famous?"', 'starter': "Let's play a game! I am a famous cricketer and you are a reporter. What is the first question you want to ask me?", 'followups': ['What do you want to know about my life?', 'What do you want to ask about my favourite sport?', 'Can you ask me one more question?', 'What was your favourite question to ask?']}],
+    },
+    'y1topic3': {
+        'title': 'Likes and Dislikes',
+        'icon': '❤️',
+        'conversations': [{'id': 'y1t3c1', 'title': 'Talking About Likes', 'goal': 'Student expresses likes using simple structures and gives a reason.', 'vocabulary': 'like, love, enjoy, favourite, because, sport, food, hobby', 'structures': '"I like… because…" / "My favourite … is…" / "I love…" / "I enjoy…"', 'starter': 'Tell me — what is something you really like? It can be a food, a game, anything!', 'followups': ['Why do you like that?', 'What is your favourite sport?', 'What is your favourite food?', 'Is there a song you like?', 'What is your favourite TV show?']}, {'id': 'y1t3c2', 'title': 'Talking About Dislikes', 'goal': 'Student expresses dislikes politely using simple structures.', 'vocabulary': "don't like, hate, dislike, can't stand, because", 'structures': '"I don\'t like… because…" / "I hate…" / "I\'m not fond of…"', 'starter': "Now tell me something you don't like at all! It's okay, everyone has things they dislike.", 'followups': ["Why don't you like that?", "Is there a food you don't like?", "Is there a game you don't enjoy?", "What is something most people like but you don't?"]}],
+    },
+    'y1topic4': {
+        'title': 'Interviews',
+        'icon': '🎤',
+        'conversations': [{'id': 'y1t4c1', 'title': 'Interview a Partner', 'goal': 'Student asks and answers simple personal questions in an interview format.', 'vocabulary': 'interview, question, answer, favourite, hobby, family', 'structures': '"What is your favourite…?" / "Do you like…?" / "Tell me about…"', 'starter': "Let's do an interview! I'll ask you questions like a reporter. What is your favourite thing to do after school?", 'followups': ['What is your favourite food?', 'What do you like to do on weekends?', 'Tell me about your family.', 'What is something you are good at?']}, {'id': 'y1t4c2', 'title': 'Talking About a Friend', 'goal': 'Student describes someone else using third person simple present.', 'vocabulary': 'he, she, likes, plays, lives, has', 'structures': '"He/She likes…" / "He/She is good at…" / "He/She has…" / "He/She lives in…"', 'starter': 'Think of a friend or someone in your family. Can you tell me one thing they like to do?', 'followups': ['What does this person like to eat?', 'What is this person good at?', 'Where does this person live?', 'What makes this person special?']}],
+    },
+    'y1topic5': {
+        'title': 'Daily Routines',
+        'icon': '⏰',
+        'conversations': [{'id': 'y1t5c1', 'title': 'My Day', 'goal': 'Student describes their daily routine using simple present tense and time connectives.', 'vocabulary': 'wake up, brush, eat, go, school, homework, sleep, first, then, after that', 'structures': '"I wake up at…" / "First I…, then I…" / "After school I…" / "At night I…"', 'starter': 'Tell me about your day! What is the first thing you do when you wake up?', 'followups': ['What do you do after you wake up?', 'What time do you go to school?', 'What do you do after school?', 'What do you do before you sleep?']}, {'id': 'y1t5c2', 'title': "Someone Else's Routine", 'goal': "Student talks about another person's daily routine using third person.", 'vocabulary': 'he/she wakes up, goes, plays, eats, third person -s', 'structures': '"He/She wakes up at…" / "He/She goes to…" / "What does he/she do in the evening?"', 'starter': 'Think about your mother, father, or someone in your family. What is the first thing they do every morning?', 'followups': ['What does this person do during the day?', 'What does this person do in the evening?', 'Is their routine different from yours?', 'What time does this person sleep?']}],
+    },
+    'y1topic6': {
+        'title': 'Describing People',
+        'icon': '🧑',
+        'conversations': [{'id': 'y1t6c1', 'title': 'What Does Someone Look Like', 'goal': "Student uses simple adjectives to describe a person's physical appearance.", 'vocabulary': 'tall, short, hair, eyes, wearing, has', 'structures': '"He/She is tall/short." / "He/She has … hair." / "He/She is wearing…"', 'starter': 'Think of someone you know well. Can you describe what they look like?', 'followups': ['What colour is their hair?', 'Are they tall or short?', 'What are they usually wearing?', 'What is the first thing people notice about them?']}, {'id': 'y1t6c2', 'title': 'What Is Someone Like', 'goal': 'Student uses simple personality adjectives to describe character.', 'vocabulary': 'kind, friendly, funny, shy, honest, helpful', 'structures': '"He/She is kind." / "He/She always…" / "He/She never…"', 'starter': "Now tell me about this person's personality. Are they kind, funny, shy, or something else?", 'followups': ['Why do you think they are kind/funny/shy?', 'Can you give an example of something they did?', 'Is there someone in your family who is very funny?', 'What is one word to describe your best friend?']}],
+    },
+    'y1topic7': {
+        'title': 'Homes and Furniture',
+        'icon': '🏠',
+        'conversations': [{'id': 'y1t7c1', 'title': 'My Home', 'goal': 'Student describes their home using simple vocabulary for rooms and prepositions of place.', 'vocabulary': 'house, room, kitchen, bedroom, living room, bathroom, upstairs, downstairs', 'structures': '"I live in a…" / "There is a… in my house." / "My bedroom is…" / "The kitchen is…"', 'starter': 'Tell me about your home. How many rooms does it have?', 'followups': ['What room do you spend the most time in?', 'Is your kitchen upstairs or downstairs?', 'Do you share your room with someone?', 'What is your favourite room in the house?']}, {'id': 'y1t7c2', 'title': 'My Dream Room', 'goal': 'Student imagines and describes an ideal room using simple descriptive language.', 'vocabulary': 'would, colour, bed, table, window, want', 'structures': '"I would like a… room." / "My dream room would have…" / "The colour would be…"', 'starter': 'If you could design your own dream room, what would it look like?', 'followups': ['What colour would the walls be?', 'What furniture would you have?', 'Would you have a window?', 'What is one special thing you would add?']}],
+    },
+    'y1topic8': {
+        'title': 'Favourite Places',
+        'icon': '📍',
+        'conversations': [{'id': 'y1t8c1', 'title': 'Places in My Town', 'goal': 'Student names and talks about places in their local area.', 'vocabulary': 'market, school, park, shop, temple, hospital, road', 'structures': '"There is a… near my house." / "I go to the… every…" / "My favourite place is…"', 'starter': 'What are some places near your house? Is there a market, a park, or a shop close by?', 'followups': ['What is your favourite place to go in your town?', 'Why do you like that place?', 'Is there a park near your house?', 'Where do you go on weekends?']}, {'id': 'y1t8c2', 'title': "A Place I'd Like to Visit", 'goal': 'Student talks about a place they would like to visit, real or imagined, using simple future language.', 'vocabulary': 'visit, would like, beach, mountain, city, village', 'structures': '"I would like to visit…" / "I want to go to… because…" / "I have never been to… but I want to."', 'starter': 'Is there a place you would really like to visit one day? It can be anywhere!', 'followups': ['Why do you want to go there?', 'What would you do there?', 'Have you ever been to a beach or a mountain?', 'Who would you take with you?']}],
+    },
+    'y1topic9': {
+        'title': 'Nature and the World Around Us',
+        'icon': '🌳',
+        'conversations': [{'id': 'y1t9c1', 'title': 'Things I See in Nature', 'goal': 'Student describes things they notice in nature using simple sensory language.', 'vocabulary': 'tree, sky, flower, bird, sun, rain, colour, beautiful', 'structures': '"I see…" / "I like the colour of…" / "I hear… when…"', 'starter': 'Think about something beautiful you have seen in nature — a tree, the sky, a flower. Can you describe it?', 'followups': ['What colour was it?', 'Where did you see it?', 'Do you like the rain or the sun more?', 'What is your favourite thing about nature?']}, {'id': 'y1t9c2', 'title': 'My Favourite Season', 'goal': 'Student talks about their favourite season and weather using simple present tense.', 'vocabulary': 'summer, winter, monsoon, hot, cold, rain, sunny', 'structures': '"My favourite season is…" / "In summer it is…" / "I like… because…"', 'starter': 'Which season do you like best — summer, winter, or monsoon? Why?', 'followups': ['What do you do during that season?', "What do you wear when it's cold?", 'Do you like the rain?', 'What is the weather like today?']}],
+    },
+    'y1topic10': {
+        'title': 'Keeping a Pet',
+        'icon': '🐶',
+        'conversations': [{'id': 'y1t10c1', 'title': 'Talking About Pets', 'goal': 'Student talks about pets they have or would like to have, using simple structures.', 'vocabulary': 'dog, cat, pet, name, feed, look after', 'structures': '"I have a…" / "My pet\'s name is…" / "I would like to have a…" / "I feed my pet…"', 'starter': 'Do you have a pet, or is there a pet you would love to have one day?', 'followups': ["What is your pet's name?", 'What do you feed your pet?', 'What pet would you like to have?', 'Have you ever had a pet before?']}, {'id': 'y1t10c2', 'title': 'Convince Your Parent', 'goal': 'Student practises persuasive simple language in a roleplay asking for a pet.', 'vocabulary': 'promise, take care, responsible, please', 'structures': '"I promise to…" / "I will take care of…" / "Can I please have a…?"', 'starter': 'Imagine you really want a pet but your parent says no. What would you say to convince them?', 'followups': ['What would you promise to do?', 'Why do you think a pet would be good for you?', 'What would you tell them if they say a pet is too much work?', 'Do you think you are responsible enough for a pet?']}],
+    },
+    'y1topic11': {
+        'title': 'Story Time',
+        'icon': '📖',
+        'conversations': [{'id': 'y1t11c1', 'title': 'Tell Me a Story', 'goal': 'Student narrates a simple story with a beginning, middle, and end using past tense.', 'vocabulary': 'once, then, suddenly, after that, finally', 'structures': '"Once there was…" / "Then…" / "Suddenly…" / "In the end…"', 'starter': "Let's make up a story together! Once upon a time, there was a boy who found a dog. What happens next?", 'followups': ['What did the boy do next?', 'What happened suddenly?', 'How does the story end?', 'Do you want to tell me your own story now?']}, {'id': 'y1t11c2', 'title': 'My Favourite Story', 'goal': 'Student talks about a favourite story or fairy tale they know, retelling key parts.', 'vocabulary': 'story, character, beginning, end, favourite', 'structures': '"My favourite story is…" / "It is about…" / "In the end…" / "I like this story because…"', 'starter': 'What is your favourite story or fairy tale? Can you tell me what happens in it?', 'followups': ['Who is your favourite character in the story?', 'What happens at the end?', 'Why do you like this story?', 'Is there a lesson in the story?']}],
+    },
+    'y1topic12': {
+        'title': 'Songs and Listening',
+        'icon': '🎵',
+        'conversations': [{'id': 'y1t12c1', 'title': 'My Favourite Song', 'goal': 'Student talks about a song they like and why, using simple opinion language.', 'vocabulary': 'song, sing, listen, favourite, like', 'structures': '"My favourite song is…" / "I like to listen to…" / "I like this song because…"', 'starter': 'Do you have a favourite song? What is it and why do you like it?', 'followups': ['Do you like to sing?', 'When do you listen to music?', 'What song makes you happy?', 'Is there a song your family likes?']}],
+    },
+    'y1topic13': {
+        'title': 'More Questions',
+        'icon': '💬',
+        'conversations': [{'id': 'y1t13c1', 'title': 'Ask, Answer, Add', 'goal': 'Student practises extending a conversation by asking follow-up questions after answering.', 'vocabulary': 'favourite, often, why, what, more', 'structures': '"What\'s your favourite…?" / "I like… I also…" / "Do you…?"', 'starter': "Let's practise a longer conversation. What's your favourite food?", 'followups': ['How often do you eat that?', 'Do you cook it yourself or buy it?', 'What else do you like to eat?', 'Can you ask me a question now?']}],
+    },
+    'y1topic14': {
+        'title': 'Mixed Practice',
+        'icon': '🎲',
+        'conversations': [{'id': 'y1t14c1', 'title': 'Correct the Mistake', 'goal': 'Student listens to an incorrect sentence and practises correcting it, building grammar awareness.', 'vocabulary': 'correct, wrong, fix, sentence', 'structures': '"That is not right, it should be…" / "I think the correct sentence is…"', 'starter': "I'm going to say a silly sentence and you tell me what's wrong with it. Ready? Elephants are very small animals.", 'followups': ['Can you fix this one — we eat breakfast in the evening?', 'What is wrong with this — the sun sets in the east?', 'Can you make up a funny wrong sentence for me to fix?', 'Why was that sentence wrong?']}, {'id': 'y1t14c2', 'title': 'Guess Who', 'goal': 'Student describes a well-known person using adjectives for the AI to guess, practising descriptive language.', 'vocabulary': 'famous, describe, guess, looks like, is like', 'structures': '"This person is…" / "This person looks like…" / "This person is famous for…"', 'starter': "Let's play a guessing game! Think of someone famous and describe them to me without saying their name.", 'followups': ['What do they look like?', 'What are they famous for?', 'Can you give me one more clue?', "Do you want to guess who I'm thinking of now?"]}],
+    },
+    'y1topic15': {
+        'title': 'Describing Objects',
+        'icon': '🔍',
+        'conversations': [{'id': 'y1t15c1', 'title': 'What Is It Made Of', 'goal': 'Student describes everyday objects using adjectives, materials, and uses.', 'vocabulary': 'made of, wood, plastic, metal, used for, round, big, small', 'structures': '"It is made of…" / "It is used for…" / "It is…" (adjective)', 'starter': "Let's play I Spy! Think of an object near you and describe it without telling me what it is.", 'followups': ['What is it made of?', 'What is it used for?', 'Is it big or small?', 'Can I guess what it is?']}, {'id': 'y1t15c2', 'title': 'My Everyday Objects', 'goal': 'Student talks about objects they use every day and their importance.', 'vocabulary': 'always, carry, use, important, need', 'structures': '"I always carry…" / "I use… every day." / "I need… because…"', 'starter': 'What is something you always carry with you or use every day?', 'followups': ['Why is this object important to you?', 'What would you do without it?', 'Is there something in your kitchen you use every day?', 'What object would you like to get as a present?']}],
+    },
+    'y1topic16': {
+        'title': 'My Favourite Things',
+        'icon': '⭐',
+        'conversations': [{'id': 'y1t16c1', 'title': 'Favourite Things and Why', 'goal': 'Student talks about favourite things across categories with simple reasons.', 'vocabulary': 'favourite, category, because, best', 'structures': '"My favourite … is … because…" / "I like this because…"', 'starter': "Let's talk about your favourite things! What is your favourite food, and what is your favourite game?", 'followups': ['What is your favourite animal?', 'What is your favourite school subject?', 'What is your favourite colour and why?', "What is something you really don't like?"]}],
+    },
+    'y1topic17': {
+        'title': "Let's Go Shopping",
+        'icon': '🛍️',
+        'conversations': [{'id': 'y1t17c1', 'title': 'Asking About Prices', 'goal': 'Student practises asking and answering about prices using simple structures.', 'vocabulary': 'how much, rupees, expensive, cheap, price', 'structures': '"How much is/are…?" / "It is… rupees." / "That is expensive/cheap."', 'starter': 'Imagine you are in a shop. How would you ask the price of something?', 'followups': ['What would you say if something is too expensive?', 'What would you say if something is cheap?', 'What is something you would like to buy?', 'Have you ever bargained for something?']}, {'id': 'y1t17c2', 'title': 'At the Shop Roleplay', 'goal': 'Student roleplays a simple shopping conversation as customer or shopkeeper.', 'vocabulary': 'size, colour, looking for, help, buy', 'structures': '"I\'m looking for…" / "Can I help you?" / "Do you have this in…?" / "I\'ll take it."', 'starter': "Let's do a roleplay. I am the shopkeeper. You are looking for a pair of shoes. What do you say to me?", 'followups': ['What colour would you like?', 'What size do you need?', 'Do you want to try it on?', 'How would you ask the price?']}],
+    },
+    'y1topic18': {
+        'title': 'Buying Presents',
+        'icon': '🎁',
+        'conversations': [{'id': 'y1t18c1', 'title': 'Choosing a Gift', 'goal': 'Student talks about choosing presents for people they know using simple reasoning.', 'vocabulary': 'gift, present, would, because, like', 'structures': '"I would gift… a… because…" / "For my…, I would buy…"', 'starter': 'If you could buy a present for someone in your family, what would you get them and why?', 'followups': ['Why would you choose that gift?', 'What is the best present you have ever received?', 'What occasion do people give presents on?', 'What present would you like to receive?']}],
+    },
+    'y1topic19': {
+        'title': 'Family',
+        'icon': '👨\u200d👩\u200d👧\u200d👦',
+        'conversations': [{'id': 'y1t19c1', 'title': 'My Family', 'goal': 'Student talks about family members using simple vocabulary and structures.', 'vocabulary': 'mother, father, brother, sister, grandmother, grandfather, family', 'structures': '"I have a…" / "My … is called…" / "I live with…"', 'starter': 'Tell me about your family. Who do you live with?', 'followups': ['How many people are in your family?', 'Do you have brothers or sisters?', 'Who is the oldest person in your family?', 'Who do you spend the most time with?']}, {'id': 'y1t19c2', 'title': 'Describing a Family Member', 'goal': 'Student describes one family member in more detail using simple descriptive language.', 'vocabulary': 'oldest, youngest, kind, works, lives', 'structures': '"My… is…" / "He/She works as…" / "He/She is very…"', 'starter': 'Pick one person in your family. Can you tell me about them?', 'followups': ['What does this person do?', 'What is this person like?', 'Do you look like this person?', 'What do you like doing together?']}],
+    },
+    'y1topic20': {
+        'title': 'Friends',
+        'icon': '👫',
+        'conversations': [{'id': 'y1t20c1', 'title': 'My Best Friend', 'goal': 'Student describes their best friend using vocabulary for friendship and personality.', 'vocabulary': 'best friend, kind, funny, honest, since when', 'structures': '"My best friend is…" / "He/She is…" / "We have been friends since…"', 'starter': 'Do you have a best friend? Tell me about them!', 'followups': ['How did you become friends?', 'What do you like to do together?', 'What makes them a good friend?', 'How long have you been friends?']}, {'id': 'y1t20c2', 'title': 'What Makes a Good Friend', 'goal': 'Student reflects on qualities of friendship using simple opinion language.', 'vocabulary': 'kind, share, listen, trust, help', 'structures': '"A good friend is…" / "A good friend always…" / "I think… because…"', 'starter': 'What do you think makes someone a good friend?', 'followups': ['Have you ever helped a friend?', 'Has a friend ever helped you?', 'What do good friends do together?', 'How many close friends do you have?']}],
+    },
+    'y1topic21': {
+        'title': 'Describing Actions',
+        'icon': '🏃',
+        'conversations': [{'id': 'y1t21c1', 'title': 'How Do You Do Things', 'goal': 'Student uses simple adverbs to describe how actions are performed.', 'vocabulary': 'quickly, slowly, loudly, quietly, happily', 'structures': '"I … quickly/slowly." / "He/She … loudly." / "I do this… because…"', 'starter': 'Tell me — do you walk to school quickly or slowly?', 'followups': ['Do you eat your food quickly or slowly?', 'Do you talk loudly or quietly?', 'How do you do your homework — carefully or quickly?', 'How does your friend laugh — loudly or softly?']}],
+    },
+    'y1topic22': {
+        'title': 'How Often Do You',
+        'icon': '🔁',
+        'conversations': [{'id': 'y1t22c1', 'title': 'Talking About Frequency', 'goal': 'Student talks about how often they do activities using simple frequency words.', 'vocabulary': 'always, sometimes, never, often, every day, once a week', 'structures': '"I always…" / "I sometimes…" / "I never…" / "How often do you…?"', 'starter': 'How often do you play outside — every day, sometimes, or never?', 'followups': ['How often do you watch TV?', 'How often do you help at home?', 'How often do you read books?', 'Is there something you never do?']}],
+    },
+    'y1topic23': {
+        'title': 'Food Choices',
+        'icon': '🍛',
+        'conversations': [{'id': 'y1t23c1', 'title': 'Food I Eat', 'goal': 'Student talks about food they eat and like using simple present tense.', 'vocabulary': 'eat, drink, cook, favourite, healthy', 'structures': '"I eat… for breakfast/lunch/dinner." / "I like to eat…" / "I don\'t like…"', 'starter': 'What do you usually eat for breakfast?', 'followups': ['What is your favourite food to eat at home?', 'Do you like spicy food?', 'What do you drink most often?', 'Is there a food you have never tried but want to?']}, {'id': 'y1t23c2', 'title': 'Healthy or Unhealthy', 'goal': 'Student reflects on healthy vs unhealthy eating habits using simple comparative language.', 'vocabulary': 'healthy, unhealthy, fruit, vegetable, sweet, junk food', 'structures': '"I think… is healthy because…" / "I eat… every day." / "I should eat more…"', 'starter': 'Do you think you are a healthy eater? Tell me what you eat in a normal day.', 'followups': ['What fruits or vegetables do you like?', 'Do you eat sweets often?', 'What is one food you should eat more of?', 'What is your favourite healthy food?']}],
+    },
+}
+
+
+def get_curriculum_for_age(age: int) -> dict:
+    """Returns the right curriculum set based on student age."""
+    if age is not None and 9 <= age <= 12:
+        return CURRICULUM_9_12
+    return CURRICULUM
+
 GLOBAL_RULES = """
 GLOBAL RULES — apply to every single response without exception:
 - Keep vocabulary appropriate for the student's age — do not use overly complex words
@@ -407,14 +536,19 @@ GLOBAL RULES — apply to every single response without exception:
 - If the student gives a one-word answer, gently prompt for a full sentence using a simple example
 - Keep responses concise — the student needs to speak more than you do
 - ALWAYS stay on the module topic — never drift into unrelated subjects
-- Use examples from Indian daily life — school, cricket, festivals, local markets, family
+- Use examples grounded in an underprivileged Indian student's daily life — local market, school, cricket on the street, family, festivals. NEVER assume access to malls, imported goods, tablets, foreign travel, or other costly/unfamiliar things
 - Your tone must always be warm, patient, and encouraging
 - Never make the student feel embarrassed or judged for errors
+- For younger students (under 13), use extremely short, simple sentences and celebrate every small success enthusiastically
 """
 
 def build_system_prompt(age: int, conv: dict) -> str:
     level = LEVELS.get(age, LEVELS[17])
-    if age <= 14:
+    if age <= 10:
+        lang = "Use VERY simple words and VERY short sentences (5-8 words max). Speak like a kind teacher talking to a young beginner. Repeat key words often. Be extremely encouraging and patient — this student has limited English exposure."
+    elif age <= 12:
+        lang = "Use simple, everyday words and short sentences. Avoid idioms or complex grammar. Be warm, patient, and very encouraging — this student is still building basic confidence in English."
+    elif age <= 14:
         lang = "Use clear everyday vocabulary and natural sentences. Be warm and encouraging. Avoid complex grammar explanations."
     elif age <= 16:
         lang = "Use natural conversational language. Occasionally use idioms. Be engaging and gently challenging."
@@ -590,6 +724,163 @@ def apply_curriculum_overrides(curriculum: dict, overrides: dict) -> dict:
 
 
 # ─────────────────────────────────────────────
+# ASSIGNMENT + PROGRESS REPORT HELPERS
+# ─────────────────────────────────────────────
+def get_student_assignment(student_name: str) -> dict:
+    """Returns {mode: 'free'|'assigned', conv_ids: []} or None."""
+    if db is None: return None
+    try:
+        sid = student_name.lower().replace(" ", "_")
+        doc = db.collection("students").document(sid).collection("meta").document("assignment").get()
+        return doc.to_dict() if doc.exists else None
+    except: return None
+
+def set_student_assignment(student_name: str, mode: str, conv_ids: list):
+    if db is None: return
+    sid = student_name.lower().replace(" ", "_")
+    db.collection("students").document(sid).collection("meta").document("assignment").set({
+        "mode": mode, "conv_ids": conv_ids
+    })
+
+def get_progress_report(student_name: str) -> dict:
+    if db is None: return {}
+    try:
+        sid = student_name.lower().replace(" ", "_")
+        doc = db.collection("students").document(sid).collection("meta").document("progress_report").get()
+        return doc.to_dict() if doc.exists else {}
+    except: return {}
+
+def save_progress_report(student_name: str, report: dict):
+    if db is None: return
+    sid = student_name.lower().replace(" ", "_")
+    db.collection("students").document(sid).collection("meta").document("progress_report").set(report)
+
+def get_new_sessions_since_report(student_name: str, existing_report: dict) -> list:
+    """Returns sessions that occurred after the last report was generated."""
+    last_generated = existing_report.get("generated_at", "") if existing_report else ""
+    all_sessions = get_past_sessions(student_name)
+    if not last_generated:
+        return all_sessions
+    return [s for s in all_sessions if s.get("started_at","") > last_generated]
+
+def has_new_sessions_since_report(student_name: str, existing_report: dict) -> bool:
+    return len(get_new_sessions_since_report(student_name, existing_report)) > 0
+
+def generate_progress_report(student_name: str, existing_report: dict = None,
+                              force_full: bool = False) -> dict:
+    """
+    Incremental report generation:
+    - First time (no existing_report): analyses all sessions, creates report from scratch.
+    - Subsequent times: only analyses NEW sessions since last report, merges with existing.
+    - force_full=True (teacher only): regenerates entirely from scratch.
+    """
+    all_sessions = get_past_sessions(student_name)
+    if not all_sessions:
+        return {"error": "No sessions found."}
+
+    is_first = not existing_report or not existing_report.get("text") or force_full
+
+    if is_first:
+        sessions_to_analyse = all_sessions[:20]
+        mode = "full"
+    else:
+        sessions_to_analyse = get_new_sessions_since_report(student_name, existing_report)[:10]
+        if not sessions_to_analyse:
+            return {"error": "No new sessions since last report."}
+        mode = "incremental"
+
+    # Collect student messages from chosen sessions
+    new_msgs = []
+    for sess in sessions_to_analyse:
+        msgs = get_session_messages(student_name, sess["id"])
+        for m in msgs:
+            if m.get("role") == "user":
+                new_msgs.append(m.get("content",""))
+
+    if not new_msgs:
+        return {"error": "No student messages found in these sessions."}
+
+    combined = "\n".join(f"- {m}" for m in new_msgs[:60])
+    client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+    if is_first:
+        # Full report from scratch
+        prompt = f"""You are an English language teacher reviewing a student's spoken English practice.
+Below are the student's spoken responses collected over several sessions:
+
+{combined}
+
+Produce a structured progress report with these exact sections:
+
+## Summary
+A 2-3 sentence overall assessment of the student's English level and main strengths.
+
+## Grammar errors by category
+List the most common grammar error types with a specific example and corrected version:
+**Error type**: [name]
+Example: "[what they said]" → "[correct version]"
+Explanation: [brief explanation]
+
+## Vocabulary observations
+Note patterns in vocabulary — overused words, missing vocabulary, or good choices.
+
+## Specific strategies to improve
+List 3-5 concrete, actionable strategies tailored to this student's specific errors.
+
+Keep the tone encouraging. Focus on patterns, not one-off errors."""
+
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.4
+        )
+        report_text = resp.choices[0].message.content
+        return {
+            "text": report_text,
+            "generated_at": datetime.utcnow().isoformat(),
+            "session_count": len(all_sessions),
+            "message_count": len(new_msgs),
+            "last_session_date": all_sessions[0].get("started_at","")[:10] if all_sessions else "",
+        }
+
+    else:
+        # Incremental: extract new patterns and merge with existing report
+        existing_text = existing_report.get("text","")
+        prompt = f"""You are an English language teacher updating a student's progress report.
+
+EXISTING REPORT:
+{existing_text}
+
+NEW RESPONSES from {len(sessions_to_analyse)} new session(s) since the last report:
+{combined}
+
+Update the existing report by:
+1. Updating the Summary to reflect any improvement or new patterns.
+2. Adding any NEW grammar error types seen in the new responses (do not repeat existing ones unless they are still occurring frequently).
+3. Updating Vocabulary observations if new patterns appear.
+4. Revising the Specific strategies if new priorities have emerged, or confirming existing ones still apply.
+
+Return the COMPLETE updated report using the same section headings. Be concise — do not pad.
+Keep the tone encouraging."""
+
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.4
+        )
+        merged_text = resp.choices[0].message.content
+        prev_count = existing_report.get("message_count", 0)
+        prev_sessions = existing_report.get("session_count", 0)
+        return {
+            "text": merged_text,
+            "generated_at": datetime.utcnow().isoformat(),
+            "session_count": prev_sessions + len(sessions_to_analyse),
+            "message_count": prev_count + len(new_msgs),
+            "last_session_date": all_sessions[0].get("started_at","")[:10] if all_sessions else "",
+        }
+
+
+# ─────────────────────────────────────────────
 # OPENAI HELPERS
 # ─────────────────────────────────────────────
 def get_openai_client():
@@ -693,7 +984,7 @@ for k, v in {
 # ─────────────────────────────────────────────
 def screen_login():
     st.markdown("## 🎙️ SpeakUp")
-    st.markdown("##### AI English conversation practice · Ages 13–17")
+    st.markdown("##### AI English conversation practice · Ages 9–17")
     st.info("🔊 Make sure your speaker volume is turned up — the AI will speak its questions aloud.")
     st.divider()
 
@@ -702,7 +993,7 @@ def screen_login():
     with tab_student:
         with st.form("login_student"):
             name = st.text_input("Full name", placeholder="e.g. Aanya Sharma")
-            age  = st.selectbox("Age", [""] + list(range(13, 18)),
+            age  = st.selectbox("Age", [""] + list(range(9, 18)),
                                 format_func=lambda x: "Select age…" if x == "" else str(x))
             if st.form_submit_button("Start learning →", use_container_width=True):
                 if not name.strip(): st.error("Please enter your full name.")
@@ -752,51 +1043,102 @@ def screen_home():
     tab_practice, tab_history = st.tabs(["📚 Practice", "📋 Past sessions"])
 
     with tab_practice:
-        st.markdown("#### Choose a topic")
-        topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in CURRICULUM.items()}
-        chosen_label = st.selectbox("Topic", list(topic_options.keys()), label_visibility="collapsed")
-        chosen_key   = topic_options[chosen_label]
-        topic        = CURRICULUM[chosen_key]
-        st.session_state.selected_topic = chosen_key
+        assignment = get_student_assignment(s["name"])
+        completed  = get_completed_conv_ids(s["name"])
+        overrides  = get_curriculum_overrides()
 
-        # Load completed conversations for this student
-        completed = get_completed_conv_ids(s["name"])
-        overrides = get_curriculum_overrides()
+        if assignment and assignment.get("mode") == "assigned":
+            # ── ASSIGNED MODE: only show the teacher-assigned conversations ──
+            assigned_ids = assignment.get("conv_ids", [])
+            st.info("📌 Your teacher has assigned specific conversations for you to practise.")
 
-        # Get any teacher-added extra conversations for this topic
-        try:
-            extra_docs = db.collection("extra_conversations").where("topic_key","==",chosen_key).stream() if db else []
-            extra_convs = [d.to_dict() for d in extra_docs]
-        except: extra_convs = []
+            # Build a flat lookup of all convs across all topics (age-appropriate set)
+            curric = get_curriculum_for_age(s["age"])
+            all_conv_lookup = {}
+            for tk, tv in curric.items():
+                for c in tv["conversations"]:
+                    all_conv_lookup[c["id"]] = (tk, c)
+            # also check extra_conversations
+            if db:
+                try:
+                    for d in db.collection("extra_conversations").stream():
+                        dc = d.to_dict()
+                        all_conv_lookup[dc["id"]] = (dc.get("topic_key",""), dc)
+                except: pass
 
-        st.markdown("#### Choose a conversation")
-        # Merge built-in + extra, filter out hidden
-        all_convs = topic["conversations"] + extra_convs
-        convs = [c for c in all_convs if not overrides.get(c["id"],{}).get("hidden", False)]
-        for i, conv in enumerate(convs):
-            already_done = conv["id"] in completed
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                if already_done:
-                    st.markdown(f"**{conv['title']}** ✅")
-                    st.caption(f"{conv['goal']} · Done on {completed[conv['id']]}")
-                else:
-                    st.markdown(f"**{conv['title']}**")
-                    st.caption(conv["goal"])
-            with col2:
-                btn_label = "Redo →" if already_done else "Start →"
-                if st.button(btn_label, key=f"conv_{conv['id']}", use_container_width=True):
+            convs_to_show = []
+            for cid in assigned_ids:
+                if cid in all_conv_lookup:
+                    topic_key, conv = all_conv_lookup[cid]
+                    merged = {**conv, **overrides.get(cid, {})}
+                    if not merged.get("hidden"):
+                        convs_to_show.append((topic_key, merged))
+
+            if not convs_to_show:
+                st.warning("No conversations assigned yet — check back soon.")
+            else:
+                for i, (topic_key, conv) in enumerate(convs_to_show):
+                    topic_icon = curric.get(topic_key, {}).get("icon", "📖")
+                    already_done = conv["id"] in completed
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        st.markdown(f"**{topic_icon} {conv['title']}**{'  ✅' if already_done else ''}")
+                        st.caption(conv.get("goal",""))
+                        if already_done:
+                            st.caption(f"Done on {completed[conv['id']]}")
+                    with col2:
+                        btn_label = "Redo →" if already_done else "Start →"
+                        if st.button(btn_label, key=f"conv_{conv['id']}", use_container_width=True):
+                            if already_done:
+                                st.session_state.pending_already_done = {"conv": conv, "date": completed[conv["id"]]}
+                                st.session_state.screen = "already_done"
+                                st.rerun()
+                            else:
+                                st.session_state.selected_topic = topic_key
+                                launch_session(conv)
+                    if i < len(convs_to_show) - 1:
+                        st.divider()
+
+        else:
+            # ── FREE MODE: full topic + conversation picker (age-appropriate set) ──
+            curric = get_curriculum_for_age(s["age"])
+            st.markdown("#### Choose a topic")
+            topic_options = {f'{v["icon"]} {v["title"]}': k for k, v in curric.items()}
+            chosen_label = st.selectbox("Topic", list(topic_options.keys()), label_visibility="collapsed")
+            chosen_key   = topic_options[chosen_label]
+            topic        = curric[chosen_key]
+            st.session_state.selected_topic = chosen_key
+
+            # Get any teacher-added extra conversations for this topic
+            try:
+                extra_docs = db.collection("extra_conversations").where("topic_key","==",chosen_key).stream() if db else []
+                extra_convs = [d.to_dict() for d in extra_docs]
+            except: extra_convs = []
+
+            st.markdown("#### Choose a conversation")
+            all_convs = topic["conversations"] + extra_convs
+            convs = [c for c in all_convs if not overrides.get(c["id"],{}).get("hidden", False)]
+            for i, conv in enumerate(convs):
+                already_done = conv["id"] in completed
+                col1, col2 = st.columns([4, 1])
+                with col1:
                     if already_done:
-                        st.session_state.pending_already_done = {
-                            "conv": conv,
-                            "date": completed[conv["id"]]
-                        }
-                        st.session_state.screen = "already_done"
-                        st.rerun()
+                        st.markdown(f"**{conv['title']}** ✅")
+                        st.caption(f"{conv['goal']} · Done on {completed[conv['id']]}")
                     else:
-                        launch_session(conv)
-            if i < len(convs) - 1:
-                st.divider()
+                        st.markdown(f"**{conv['title']}**")
+                        st.caption(conv["goal"])
+                with col2:
+                    btn_label = "Redo →" if already_done else "Start →"
+                    if st.button(btn_label, key=f"conv_{conv['id']}", use_container_width=True):
+                        if already_done:
+                            st.session_state.pending_already_done = {"conv": conv, "date": completed[conv["id"]]}
+                            st.session_state.screen = "already_done"
+                            st.rerun()
+                        else:
+                            launch_session(conv)
+                if i < len(convs) - 1:
+                    st.divider()
 
     with tab_history:
         screen_history_tab(s)
@@ -819,18 +1161,86 @@ def delete_student_session(student_name: str, session_id: str):
     except Exception as e:
         st.error(f"Could not delete session: {e}")
 
+def render_progress_report(report: dict, editable: bool = False, student_name: str = ""):
+    """Renders the progress report. If editable=True, shows an edit form (teacher only)."""
+    if not report or "text" not in report:
+        return
+    st.caption(f"Generated {report.get('generated_at','')[:10]} · Based on {report.get('session_count',0)} sessions · {report.get('message_count',0)} messages")
+    if editable and student_name:
+        with st.form("edit_report_form"):
+            edited = st.text_area("Edit report", value=report["text"], height=500)
+            if st.form_submit_button("💾 Save edited report", use_container_width=True):
+                report["text"] = edited
+                report["edited_by_teacher"] = True
+                save_progress_report(student_name, report)
+                st.success("Report saved.")
+                st.rerun()
+    else:
+        st.markdown(report["text"])
+
+
 def screen_history_tab(s):
     sessions = get_past_sessions(s["name"])
     if not sessions:
         st.caption("No sessions yet — complete your first conversation to see it here.")
         return
     st.markdown(f"**{len(sessions)} sessions completed**")
+
+    # ── Progress report button ──
+    existing_report = get_progress_report(s["name"])
+    has_new = has_new_sessions_since_report(s["name"], existing_report)
+
+    rcol1, rcol2 = st.columns([3,1])
+    with rcol1:
+        if existing_report:
+            st.caption(f"📊 Report last updated {existing_report.get('generated_at','')[:10]}")
+            if has_new:
+                st.caption("🆕 You have new sessions since your last report.")
+        else:
+            st.caption("No report yet — complete some sessions and generate one.")
+    with rcol2:
+        if not existing_report:
+            # First time — always show button
+            if st.button("📊 Generate report", use_container_width=True):
+                with st.spinner("Analysing your sessions…"):
+                    try:
+                        report = generate_progress_report(s["name"])
+                        if "error" not in report:
+                            save_progress_report(s["name"], report)
+                            st.success("Report ready!")
+                            st.rerun()
+                        else:
+                            st.error(report["error"])
+                    except Exception as e:
+                        st.error(f"Could not generate report: {e}")
+        elif has_new:
+            # New sessions available — update existing
+            if st.button("🆕 Update report", use_container_width=True):
+                with st.spinner("Adding new sessions to your report…"):
+                    try:
+                        report = generate_progress_report(s["name"], existing_report=existing_report)
+                        if "error" not in report:
+                            save_progress_report(s["name"], report)
+                            st.success("Report updated!")
+                            st.rerun()
+                        else:
+                            st.error(report["error"])
+                    except Exception as e:
+                        st.error(f"Could not update report: {e}")
+        else:
+            st.caption("Up to date ✓")
+
+    if existing_report and existing_report.get("text"):
+        with st.expander("📊 View my progress report", expanded=False):
+            render_progress_report(existing_report, editable=False)
+
+    st.divider()
     for sess in sessions:
         date_str   = sess.get("started_at", "")[:10]
         msgs       = sess.get("message_count", 0)
         title      = sess.get("conv_title", sess.get("conversation", "Session"))
         topic_id   = sess.get("topic", "")
-        topic_icon = CURRICULUM.get(topic_id, {}).get("icon", "📖")
+        topic_icon = get_curriculum_for_age(s["age"]).get(topic_id, {}).get("icon", "📖")
         col1, col2, col3 = st.columns([4, 1, 1])
         with col1:
             st.markdown(f"**{topic_icon} {title}**")
@@ -870,7 +1280,7 @@ def screen_chat():
     # Header
     col1, col2 = st.columns([4, 1])
     with col1:
-        topic = CURRICULUM[st.session_state.selected_topic]
+        topic = get_curriculum_for_age(s["age"])[st.session_state.selected_topic]
         st.markdown(f"**{topic['icon']} {topic['title']}** — {conv['title']}")
         st.caption(f"Age {s['age']}")
     with col2:
@@ -1197,32 +1607,132 @@ def screen_teacher_student():
     st.caption(f"Age {stu.get('age','')} · {stu.get('total_sessions',0)} sessions")
     st.divider()
 
-    sessions = get_past_sessions(stu["name"])
-    if not sessions:
-        st.info("This student has no sessions yet.")
-        return
+    tab_sess, tab_assign, tab_report = st.tabs(["📋 Sessions", "📌 Assignment", "📊 Progress report"])
 
-    for sess in sessions:
-        date_str  = sess.get("started_at","")[:10]
-        msgs      = sess.get("message_count", 0)
-        title     = sess.get("conv_title", sess.get("conversation","Session"))
-        topic_id  = sess.get("topic","")
-        icon      = CURRICULUM.get(topic_id, {}).get("icon","📖")
-        col1, col2, col3 = st.columns([4,1,1])
+    # ── Sessions tab ──
+    with tab_sess:
+        sessions = get_past_sessions(stu["name"])
+        if not sessions:
+            st.info("This student has no sessions yet.")
+        else:
+            for sess in sessions:
+                date_str  = sess.get("started_at","")[:10]
+                msgs      = sess.get("message_count", 0)
+                title     = sess.get("conv_title", sess.get("conversation","Session"))
+                topic_id  = sess.get("topic","")
+                icon      = get_curriculum_for_age(stu.get("age")).get(topic_id, {}).get("icon","📖")
+                col1, col2, col3 = st.columns([4,1,1])
+                with col1:
+                    st.markdown(f"**{icon} {title}**")
+                    st.caption(f"{date_str} · {msgs} messages")
+                with col2:
+                    if st.button("View →", key=f"t_sess_{sess['id']}", use_container_width=True):
+                        st.session_state.teacher_view_session = {"sess": sess, "student": stu}
+                        st.session_state.screen = "teacher_transcript"
+                        st.rerun()
+                with col3:
+                    if st.button("🗑️", key=f"t_del_{sess['id']}", use_container_width=True,
+                                 help="Delete this session"):
+                        delete_student_session(stu["name"], sess["id"])
+                        st.rerun()
+                st.divider()
+
+    # ── Assignment tab ──
+    with tab_assign:
+        st.markdown("### Assign conversations")
+        st.caption("Choose whether this student can pick any conversation freely, or is restricted to specific ones you assign.")
+
+        current = get_student_assignment(stu["name"]) or {"mode": "free", "conv_ids": []}
+        current_mode = current.get("mode", "free")
+        current_ids  = current.get("conv_ids", [])
+
+        mode = st.radio(
+            "Practice mode",
+            ["free", "assigned"],
+            index=0 if current_mode == "free" else 1,
+            format_func=lambda x: "🆓 Free practice — student can choose any conversation" if x == "free"
+                                  else "📌 Assigned — student only sees the conversations you choose",
+            key="assign_mode_radio"
+        )
+
+        selected_ids = current_ids.copy()
+        if mode == "assigned":
+            st.markdown("**Select conversations to assign:**")
+            # Build flat list of all conversations across all topics for this student's age group
+            stu_curric = get_curriculum_for_age(stu.get("age"))
+            for topic_key, topic_val in stu_curric.items():
+                with st.expander(f"{topic_val['icon']} {topic_val['title']}"):
+                    for conv in topic_val["conversations"]:
+                        checked = conv["id"] in selected_ids
+                        if st.checkbox(conv["title"], value=checked, key=f"asgn_{conv['id']}"):
+                            if conv["id"] not in selected_ids:
+                                selected_ids.append(conv["id"])
+                        else:
+                            if conv["id"] in selected_ids:
+                                selected_ids.remove(conv["id"])
+
+        if st.button("💾 Save assignment", use_container_width=True, type="primary"):
+            set_student_assignment(stu["name"], mode, selected_ids if mode == "assigned" else [])
+            st.success(f"Assignment saved — student is now in {'assigned' if mode == 'assigned' else 'free'} mode.")
+            st.rerun()
+
+    # ── Progress report tab ──
+    with tab_report:
+        st.markdown("### Progress report")
+        existing = get_progress_report(stu["name"])
+        has_new  = has_new_sessions_since_report(stu["name"], existing)
+
+        col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown(f"**{icon} {title}**")
-            st.caption(f"{date_str} · {msgs} messages")
+            btn_first = "📊 Generate report" if not existing else None
+            if btn_first and st.button(btn_first, use_container_width=True):
+                with st.spinner("Analysing sessions…"):
+                    try:
+                        report = generate_progress_report(stu["name"])
+                        if "error" not in report:
+                            save_progress_report(stu["name"], report)
+                            st.success("Report generated!")
+                            st.rerun()
+                        else:
+                            st.error(report["error"])
+                    except Exception as e:
+                        st.error(f"Could not generate: {e}")
         with col2:
-            if st.button("View →", key=f"t_sess_{sess['id']}", use_container_width=True):
-                st.session_state.teacher_view_session = {"sess": sess, "student": stu}
-                st.session_state.screen = "teacher_transcript"
-                st.rerun()
+            if existing and has_new:
+                if st.button("🆕 Update with new sessions", use_container_width=True):
+                    with st.spinner("Adding new sessions…"):
+                        try:
+                            report = generate_progress_report(stu["name"], existing_report=existing)
+                            if "error" not in report:
+                                save_progress_report(stu["name"], report)
+                                st.success("Report updated!")
+                                st.rerun()
+                            else:
+                                st.error(report["error"])
+                        except Exception as e:
+                            st.error(f"Could not update: {e}")
+            elif existing and not has_new:
+                st.caption("✓ Up to date")
         with col3:
-            if st.button("🗑️", key=f"t_del_{sess['id']}", use_container_width=True,
-                         help="Delete this session"):
-                delete_student_session(stu["name"], sess["id"])
-                st.rerun()
-        st.divider()
+            if existing:
+                if st.button("🔄 Regenerate from scratch", use_container_width=True):
+                    with st.spinner("Regenerating full report…"):
+                        try:
+                            report = generate_progress_report(stu["name"], force_full=True)
+                            if "error" not in report:
+                                save_progress_report(stu["name"], report)
+                                st.success("Report regenerated!")
+                                st.rerun()
+                            else:
+                                st.error(report["error"])
+                        except Exception as e:
+                            st.error(f"Could not regenerate: {e}")
+
+        if existing and existing.get("text"):
+            st.divider()
+            render_progress_report(existing, editable=True, student_name=stu["name"])
+        elif not existing:
+            st.info("No report yet — click Generate to create one.")
 
 
 # ─────────────────────────────────────────────
@@ -1310,13 +1820,23 @@ def screen_teacher_curriculum():
     st.markdown("### Edit curriculum")
     st.caption("Changes apply immediately for all students.")
 
+    age_group = st.radio(
+        "Age group",
+        ["9-12", "13-17"],
+        horizontal=True,
+        key="teacher_curric_age_group"
+    )
+    base_curriculum = CURRICULUM_9_12 if age_group == "9-12" else CURRICULUM
+
     overrides    = get_curriculum_overrides()
     extra_topics = get_extra_topics()
 
-    # Build combined topic list: hardcoded + custom
-    all_topics = {**CURRICULUM}
+    # Build combined topic list: hardcoded (for selected age group) + custom
+    # Custom topics are tagged with an age_group field; only show matching ones
+    all_topics = {**base_curriculum}
     for tid, td in extra_topics.items():
-        all_topics[tid] = td
+        if td.get("age_group", "13-17") == age_group:
+            all_topics[tid] = td
 
     topic_options = {f'{v.get("icon","📘")} {v["title"]}': k for k, v in all_topics.items()}
     chosen_label  = st.selectbox("Topic", list(topic_options.keys()),
@@ -1417,6 +1937,7 @@ def screen_teacher_curriculum():
                         "starter": nc_starter, "vocabulary": nc_vocab,
                         "structures": nc_struct,
                         "followups": [q.strip() for q in nc_followups.split("\n") if q.strip()],
+                        "age_group": age_group,
                     })
                     st.success("Conversation added!")
                     st.rerun()
@@ -1434,7 +1955,8 @@ def screen_teacher_curriculum():
                     new_tid = f"custom_topic_{uuid.uuid4().hex[:8]}"
                     db.collection("custom_topics").document(new_tid).set({
                         "title": nt_title, "icon": nt_icon,
-                        "conversations": []
+                        "conversations": [],
+                        "age_group": age_group,
                     })
                     st.success(f"Topic '{nt_title}' created! Now add conversations to it above.")
                     st.rerun()
